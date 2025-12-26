@@ -182,10 +182,34 @@ tbody td{text-align:center;padding:12px}
       <label>User Name</label>
       <input id="username">
       <label>Currency</label>
-      <select id="currency" onchange="saveCurrency()">
-        <option value="₹">INR</option>
-        <option value="$">USD</option>
-        <option value="€">EUR</option>
+<select id="currency" onchange="saveCurrency()">
+
+  <!-- India -->
+  <option value="₹">INR – Indian Rupee</option>
+
+  <!-- United States -->
+  <option value="$">USD – US Dollar</option>
+
+  <!-- Europe -->
+  <option value="€">EUR – Euro (France, Germany)</option>
+
+  <!-- China -->
+  <option value="¥">CNY – Chinese Yuan</option>
+
+  <!-- Japan -->
+  <option value="¥">JPY – Japanese Yen</option>
+
+  <!-- United Arab Emirates -->
+  <option value="د.إ">AED – UAE Dirham</option>
+
+  <!-- Singapore -->
+  <option value="S$">SGD – Singapore Dollar</option>
+
+  <!-- Malaysia -->
+  <option value="RM">MYR – Malaysian Ringgit</option>
+
+</select>
+
       </select>
       <label>Amount</label>
       <input type="number" id="amount">
@@ -420,14 +444,39 @@ function deleteExpense(id){
 }
 
 function exportCSV(){
-  let rows=["Date,Category,Amount"];
-  expenses.forEach(e=>rows.push(`${e.date},${e.category},${e.amount}`));
-  let blob=new Blob([rows.join("\n")],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="Expense_Report.csv";
+  if(!currentUser){
+    alert("Please login first");
+    return;
+  }
+
+  let rows = [];
+
+  // 🔹 TOP SUMMARY
+  rows.push(`User Name,${currentUser}`);
+  rows.push(`Currency,${currency.value}`);
+
+  const totalAmount = expenses.reduce((s,e)=>s+Number(e.amount),0);
+  rows.push(`Total,${currency.value}${totalAmount}`);
+
+  // Blank line
+  rows.push("");
+
+  // 🔹 TABLE HEADER
+  rows.push("Date,Category,Amount");
+
+  // 🔹 EXPENSE ROWS
+  expenses.forEach(e=>{
+    rows.push(`${e.date},${e.category},${e.amount}`);
+  });
+
+  let blob = new Blob(["\uFEFF" + rows.join("\n")], { type: "text/csv;charset=utf-8;" });
+
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${currentUser}_Expense_Report.csv`;
   a.click();
 }
+
 
 // === SCREEN SWITCHING ===
 function switchScreen(id, el){
