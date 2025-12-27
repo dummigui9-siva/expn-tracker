@@ -479,8 +479,23 @@ function renderHome(){
 
 
 // === DASHBOARD RENDER FUNCTIONS ===
-function renderInsight(){userOutput.innerHTML="Total spent: <b>"+expenses.reduce((s,e)=>s+Number(e.amount),0)+"</b>";}
+function renderInsight(){
+  const totalSpent = expenses.reduce((s,e)=>s+Number(e.amount),0);
+  userOutput.innerHTML =
+    "Total spent: <b>" + currency.value + totalSpent + "</b>";
+}
+
 function renderBudget(){userOutput.innerHTML="Average per entry: <b>"+(expenses.length?(expenses.reduce((s,e)=>s+Number(e.amount),0)/expenses.length).toFixed(2):0)+"</b>";}
+
+function renderBudget(){
+  const avg = expenses.length
+    ? (expenses.reduce((s,e)=>s+Number(e.amount),0) / expenses.length).toFixed(2)
+    : 0;
+
+  userOutput.innerHTML =
+    "Average per entry: <b>" + currency.value + avg + "</b>";
+}
+
 function renderCategories(){let c={};expenses.forEach(e=>c[e.category]=(c[e.category]||0)+Number(e.amount));userOutput.innerHTML=Object.entries(c).map(x=>`${x[0]} : ${currency.value}${x[1]}`).join("<br>");}
 function renderPreference(){
 
