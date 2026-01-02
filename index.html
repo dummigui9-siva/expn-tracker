@@ -1,7 +1,4 @@
 <!DOCTYPE html>
-
-<!--/* ================= Expense Tracker working code ================= */ -->
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -9,6 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+.hidden { display: none; }
+
 /* ================= THEME ================= */
 :root{
   --bg1:#b4d4d2;
@@ -16,8 +15,8 @@
   --card:#8fb8b6;
   --text:#0f2a2a;
   --nav:#8fb8b6;
-  --icon:#002f2f;
-  --icon-active:#001818;
+  --icon:#000000;
+  --icon-active:#000000;
   --header:#a9cfcd;
   --shadow-soft:0 14px 30px rgba(0,0,0,.28);
   --shadow-emboss:inset 3px 3px 6px rgba(0,0,0,.18), inset -3px -3px 6px rgba(255,255,255,.45);
@@ -31,8 +30,8 @@ body.dark{
   --card:#262628;
   --text:#f5f5f5;
   --nav:#262628;
-  --icon:#00dede;
-  --icon-active:#00ffff;
+  --icon:#000000;
+  --icon-active:#000000;
   --header:#2f2f31;
   --shadow-soft:0 18px 40px rgba(0,0,0,.7);
   --shadow-emboss:inset 3px 3px 8px rgba(0,0,0,.7), inset -3px -3px 8px rgba(255,255,255,.08);
@@ -109,10 +108,92 @@ button:hover{transform:translateY(-2px)}
 .total-caption{text-align:center;font-size:14px;opacity:.8}
 .total-box{text-align:center;font-size:22px;font-weight:700;margin-bottom:14px}
 
-table{width:100%;border-spacing:0 12px;border-collapse:separate}
-thead th{background:rgba(255,255,255,.2);padding:12px;border-radius:14px}
-tbody tr{background:var(--card);border-radius:18px;box-shadow:var(--shadow-soft)}
-tbody td{text-align:center;padding:12px}
+/* Table wrapper for scroll on small screens */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;          /* ✅ vertical scroll */
+  max-height: 260px;         /* ✅ FIXED CARD HEIGHT */
+  margin-top: 12px;
+  -webkit-overflow-scrolling: touch;
+
+  scroll-behavior: smooth;   /* ✅ smooth programmatic scroll */
+  overscroll-behavior: contain; /* ✅ prevents page bounce */
+ 
+}
+
+/* ================= SCROLL SHADOW INDICATORS ================= */
+
+.table-wrapper {
+  position: relative;
+}
+
+/* Top shadow */
+.table-wrapper::before {
+  content: "";
+  position: sticky;
+  top: 0;
+  height: 12px;
+  display: block;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.25),
+    rgba(0,0,0,0)
+  );
+  z-index: 4;
+}
+
+/* Bottom shadow */
+.table-wrapper::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  height: 12px;
+  display: block;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.25),
+    rgba(0,0,0,0)
+  );
+  z-index: 4;
+}
+
+
+
+.table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 480px;
+}
+
+.table-wrapper th {
+  background: #4CAF50;
+  color: #fff;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.table-wrapper td {
+  background: var(--card);
+  text-align: center;
+  padding: 10px 8px;
+  border-radius: 12px;
+}
+
+.table-wrapper tr:nth-child(even) td {
+  opacity: 0.9;
+}
+
+@media (max-width: 500px) {
+  .table-wrapper th, .table-wrapper td {
+    padding: 8px 6px;
+    font-size: 13px;
+  }
+}
 
 /* ================= FILTER DROPDOWN ================= */
 #categoryFilter{border-radius:999px;padding:12px 16px;background:var(--header);color:var(--text);border:none;margin-bottom:16px;cursor:pointer}
@@ -128,31 +209,75 @@ tbody td{text-align:center;padding:12px}
 .stat:hover{transform:translateY(-2px)}
 .user-output{margin-top:16px;padding:14px;border-radius:18px;background:rgba(0,0,0,.12);font-size:14px}
 
-/* ================= NAV BAR ================= */
+/* ================= NAV BAR (REFERENCE STYLE – SAFE) ================= */
 .bottom-nav{
   position:fixed;
-  bottom:18px;
+  bottom:22px;
   left:50%;
   transform:translateX(-50%);
   width:92%;
-  max-width:380px;
-  height:74px;
-  background:var(--nav);
+  max-width:420px;
+  height:72px;
+  background:#D2691E;
   border-radius:999px;
   display:flex;
   justify-content:space-around;
   align-items:center;
-  box-shadow:0 28px 60px rgba(0,0,0,.6);
+  box-shadow:0 25px 60px rgba(0,0,0,.55);
+  z-index:999;
 }
-.nav-item{width:48px;height:48px;display:flex;align-items:center;justify-content:center;position:relative;transition:transform .5s cubic-bezier(.22,.61,.36,1)}
-.nav-item svg{width:18px;height:18px;stroke:var(--icon);stroke-width:2.2;transition:.35s}
-.nav-item::before{content:"";position:absolute;width:52px;height:52px;border-radius:50%;background:#7aa9a7;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);transition:.5s;z-index:-1}
-.nav-item.active{transform:translateY(-22px)}
-.nav-item.active::before{transform:translate(-50%,-50%) scale(1)}
-.nav-item.active svg{stroke:var(--icon-active);transform:scale(1.15)}
+
+.nav-item{
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  transition:
+    transform .45s cubic-bezier(.22,.61,.36,1),
+    background .35s,
+    box-shadow .35s;
+}
+
+.nav-item svg{
+  width:20px;
+  height:20px;
+  stroke:#ffffff;
+  stroke-width:2.2;
+  transition:.35s;
+}
+
+/* Active floating button */
+.nav-item.active{
+  transform:translateY(-22px);
+  background:#ff914d;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.35),
+    0 0 0 6px rgba(255,145,77,.25);
+}
+
+.nav-item.active svg{
+  stroke:#ffffff;
+}
+
+/* Curve cut under active icon */
+.nav-item.active::after{
+  content:"";
+  position:absolute;
+  bottom:-20px;
+  left:50%;
+  transform:translateX(-50%);
+  width:44px;
+  height:20px;
+  background:#0f2a2a;
+  border-radius:0 0 999px 999px;
+  z-index:-1;
+}
+
 </style>
 </head>
-
 <body>
 
 <!-- LOGIN SCREEN -->
@@ -164,8 +289,7 @@ tbody td{text-align:center;padding:12px}
       <input id="loginName" placeholder="Your name">
       <p id="loginError" style="color:red; opacity:0.8; margin-top:10px;"></p>
       <button onclick="login()">Proceed</button>
-      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved</div>
-
+      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.1 Dt:01/01/2026 </div>
     </div>
   </div>
 </div>
@@ -189,14 +313,29 @@ tbody td{text-align:center;padding:12px}
       </select>
       <label>Amount</label>
       <input type="number" id="amount">
-      <label>Category</label>
-      <select id="category">
+      <label>Category</label>    
+      <select id="category" onchange="showCategoryDescription()">
         <option value="">Select</option>
         <option>Food</option>
         <option>Travel</option>
         <option>Shopping</option>
-        <option>Other</option>
+        <option>Fuel</option>
+        <option>FASTag</option>
+        <option>Miscellaneous</option>
       </select>
+
+      <div id="categoryDescription" style="
+        margin-top:8px;
+        font-size:12px;
+        opacity:0.8;
+        padding-left:6px;
+      "></div>
+
+      <label>Description Type</label>
+      <select id="descriptionType">
+        <option value="">Select description</option>
+      </select>
+
       <label>Date</label>
       <input type="date" id="date">
       <button id="addBtn" onclick="addExpense()">Add Expense</button>
@@ -211,16 +350,28 @@ tbody td{text-align:center;padding:12px}
         <option>Food</option>
         <option>Travel</option>
         <option>Shopping</option>
-        <option>Other</option>
+        <option>Fuel</option>
+        <option>FASTag</option>
+        <option>Miscellaneous</option>
       </select>
+
       <div class="total-caption">Total Expenses</div>
       <div class="total-box" id="total">₹0</div>
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Category</th><th>Amount</th><th>Action</th></tr>
-        </thead>
-        <tbody id="summaryBody"></tbody>
-      </table>
+      <div class="table-wrapper">
+        <table style="min-width:480px">
+
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="summaryBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -238,6 +389,45 @@ tbody td{text-align:center;padding:12px}
       <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
       <button onclick="exportCSV()">Export CSV</button>
       <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- INSTRUCTIONS TAB -->
+  <div id="instructions" class="screen">
+    <div class="card">
+      <h3>Expense Tracker - User Guide</h3>
+      <p>This simple application helps you monitor your daily expenses. Follow the tabs below to understand its features:</p>
+      
+      <div style="margin-top:16px;">
+        <strong>1. Home Tab:</strong>
+        <p>Welcome screen displaying your name and a summary of all expenses. The recent expenses table shows the latest entries and total spent.</p>
+      </div>
+
+      <div style="margin-top:16px;">
+        <strong>2. Add Tab:</strong>
+        <p>Use this tab to add new expenses. Fill your name, amount, category, description, and date. Click <b>Add Expense</b> to save.</p>
+        <p>Updating an expense is done via the <b>Expense tab</b> (3rd tab) using the Edit button.</p>
+      </div>
+
+      <div style="margin-top:16px;">
+        <strong>3. Expense Tab:</strong>
+        <p>Displays all expenses in a table. You can <b>Edit</b> or <b>Delete</b> entries. Editing redirects you to the Add tab.</p>
+      </div>
+
+      <div style="margin-top:16px;">
+        <strong>4. User Tab:</strong>
+        <p>This tab contains:</p>
+        <ul>
+          <li><b>Insights:</b> Overview of total spending.</li>
+          <li><b>Budget:</b> Average spending per entry.</li>
+          <li><b>Categories:</b> Spending grouped by category.</li>
+          <li><b>Preferences:</b> Most preferred category based on total spending and frequency.</li>
+          <li>Options to <b>Export CSV</b>, <b>Toggle Dark Mode</b>, and <b>Logout</b>.</li>
+        </ul>
+      </div>
+
+      <p style="margin-top:16px;">💡 Tip: Start by entering your name in the Home tab, then add expenses, view summaries, and explore statistics in the User tab.<br><br>© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved
+RC V1.1 Dt:01/01/2026</p>
     </div>
   </div>
 
@@ -266,12 +456,16 @@ tbody td{text-align:center;padding:12px}
       <path d="M4 20c2-4 14-4 16 0"/>
     </svg>
   </div>
+  <div class="nav-item" onclick="switchScreen('instructions',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h0"/>
+    </svg>
+  </div>
 </div>
 
 <script>
-
-
-// === ELEMENTS ===
+/* ================= JS ================= */
 const currency = document.getElementById("currency");
 const username = document.getElementById("username");
 const profileName = document.getElementById("profileName");
@@ -284,103 +478,121 @@ const summaryBody = document.getElementById("summaryBody");
 const userOutput = document.getElementById("userOutput");
 const categoryFilter = document.getElementById("categoryFilter");
 const navItems = document.querySelectorAll(".nav-item");
+const loginName = document.getElementById("loginName");
+
+const categoryDescriptionOptions = {
+  Food: ["Breakfast", "Lunch", "Dinner", "Snacks", "Groceries"],
+  Travel: ["Bus", "Train", "Cab", "Flight", "Metro"],
+  Shopping: ["Clothes", "Electronics", "Accessories", "Online Purchase"],
+  Fuel: ["Petrol", "Diesel", "CNG", "EV Charging"],
+  FASTag: ["Highway Toll", "Parking Toll"],
+  Miscellaneous: ["Medical", "Repair", "Donation", "Other"]
+};
+
+const categoryDescriptions = {
+  Food: "Meals, snacks, groceries, dining out.",
+  Travel: "Bus, train, cab, flight, metro travel.",
+  Shopping: "Clothes, electronics, personal purchases.",
+  Fuel: "Petrol, diesel, CNG, EV charging.",
+  FASTag: "Highway and parking tolls.",
+  Miscellaneous: "Other uncategorized expenses."
+};
+
 let expenses = [];
 let currentUser = sessionStorage.getItem("currentUser") || null;
-
-
 let editId = null;
 
-// Initialize defaults (no user assumed yet)
-// Load currency for current user, default ₹
 currency.value = currentUser ? (localStorage.getItem(`currency_${currentUser}`) || "₹") : "₹";
-
 username.value = "";
 profileName.innerText = "User";
 
-
-// === LOGIN ===
+/* ================= LOGIN ================= */
 function login(){
   const name = loginName.value.trim();
   const loginError = document.getElementById("loginError");
-
-  if(!name){
-    loginError.innerText = "Please enter your name to continue";
-    return;
-  }
-
+  if(!name){ loginError.innerText="Please enter your name to continue"; return; }
   loginError.innerText = "";
-
-  // 🔑 SET CURRENT USER
   currentUser = name;
-  // Load user's preferred currency
-currency.value = localStorage.getItem(`currency_${currentUser}`) || "₹";
-
-
-  // 🔑 LOAD USER-SPECIFIC EXPENSES
+  currency.value = localStorage.getItem(`currency_${currentUser}`) || "₹";
   const saved = localStorage.getItem(`expenses_${currentUser}`);
   expenses = saved ? JSON.parse(saved) : [];
-
-  // 🔑 UPDATE UI
   username.value = currentUser;
   profileName.innerText = currentUser;
-
-  sessionStorage.setItem("loggedIn", "yes");
-  sessionStorage.setItem("currentUser", currentUser);
-
+  sessionStorage.setItem("loggedIn","yes");
+  sessionStorage.setItem("currentUser",currentUser);
   initApp();
 }
 
-
-// === LOGOUT ===
 function logout(){
   sessionStorage.removeItem("loggedIn");
   location.reload();
 }
 
-// === INIT APP ===
 function initApp(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("mainApp").classList.remove("hidden");
+
+  username.value = currentUser;   // ✅ AUTO-FILL USER NAME
+
   renderHome();
   applyFilters();
 }
 
-function isLoggedIn(){
-  return sessionStorage.getItem("loggedIn") === "yes" && currentUser !== null;
+
+if(sessionStorage.getItem("loggedIn")==="yes" && sessionStorage.getItem("currentUser")){
+  currentUser=sessionStorage.getItem("currentUser");
+  const saved = localStorage.getItem(`expenses_${currentUser}`);
+  currency.value = localStorage.getItem(`currency_${currentUser}`) || "₹";
+  expenses = saved ? JSON.parse(saved) : [];
+  profileName.innerText=currentUser;
+  initApp();
 }
 
-
-if(sessionStorage.getItem("loggedIn") === "yes"){
-  currentUser = sessionStorage.getItem("currentUser");
-
-  if(currentUser){
-    const saved = localStorage.getItem(`expenses_${currentUser}`);
-    currency.value = localStorage.getItem(`currency_${currentUser}`) || "₹";
-    expenses = saved ? JSON.parse(saved) : [];
-    profileName.innerText = currentUser;
-    initApp();
-  }
-}
-
-
-// === EXPENSE FUNCTIONS ===
+/* ================= EXPENSE FUNCTIONS ================= */
 function addExpense(){
   if(!amount.value || !category.value || !date.value) return;
+  const descValue = document.getElementById("descriptionType").value;
   if(editId){
-    expenses = expenses.map(e => e.id===editId ? {...e, amount: amount.value, category: category.value, date: date.value} : e);
+    expenses = expenses.map(e => e.id===editId ? {...e, amount: amount.value, category: category.value, date: date.value, descriptionType: descValue} : e);
     editId = null;
     addBtn.innerText = "Add Expense";
   } else {
-    expenses.push({id: Date.now(), amount: amount.value, category: category.value, date: date.value});
+    expenses.push({id: Date.now(), amount: amount.value, category: category.value, descriptionType: descValue, date: date.value});
   }
   localStorage.setItem(`expenses_${currentUser}`, JSON.stringify(expenses));
-
   amount.value = date.value = "";
   category.selectedIndex = 0;
+  document.getElementById("categoryDescription").innerText = "";
+  document.getElementById("descriptionType").innerHTML = '<option value="">Select description</option>';
   applyFilters();
+  renderHome(); // reflect changes on home
 }
 
-// === FILTER & DISPLAY ===
+/* ================= EXPORT CSV (Professional) ================= */
+function exportCSV(){
+  if(!currentUser || !expenses.length) return alert("No expenses to export!");
+  let totalAmount = expenses.reduce((s,e)=>s+Number(e.amount),0);
+  let rows = [];
+  rows.push(["User Name", currentUser]);
+  rows.push(["Total Amount", totalAmount]);
+  rows.push([]);
+  rows.push(["Date","Category","Description","Amount"]);
+  expenses.forEach(e=>{
+    rows.push([e.date,e.category,e.descriptionType || "",e.amount]);
+  });
+  rows.push([]);
+  rows.push(["Total","", "", totalAmount]);
+
+  let csvContent = "data:text/csv;charset=utf-8," 
+    + rows.map(e => e.map(a=>`"${a}"`).join(",")).join("\n");
+
+  const a = document.createElement("a");
+  a.href = encodeURI(csvContent);
+  a.download = `Expense_Report_${currentUser}.csv`;
+  a.click();
+}
+
+/* ================= FILTER & APPLY ================= */
 function applyFilters(){
   let list = [...expenses];
   if(categoryFilter && categoryFilter.value !== "All"){
@@ -393,56 +605,52 @@ function applyFilters(){
       <tr>
         <td>${e.date}</td>
         <td>${e.category}</td>
+        <td>${e.descriptionType || "-"}</td>
         <td>${currency.value}${e.amount}</td>
         <td>
           <button class="action-btn edit-btn" onclick="editExpense(${e.id})">Edit</button>
           <button class="action-btn delete-btn" onclick="deleteExpense(${e.id})">Del</button>
         </td>
-      </tr>`;
+      </tr>`; 
   });
+  renderHome();
 }
 
+/* ===== AUTO-SCROLL TO LATEST ENTRY ===== */
+const wrapper = document.querySelector(".screen.active .table-wrapper");
+if(wrapper){
+  wrapper.scrollTop = wrapper.scrollHeight;
+}
+
+/* ================= EDIT & DELETE ================= */
 function editExpense(id){
   let e = expenses.find(x=>x.id===id);
   amount.value = e.amount;
   category.value = e.category;
   date.value = e.date;
+  document.getElementById("descriptionType").value = e.descriptionType || "";
   editId = id;
   addBtn.innerText = "Update Expense";
   switchScreen('add', navItems[1]);
+  showCategoryDescription();
 }
 
 function deleteExpense(id){
   expenses = expenses.filter(e=>e.id!==id);
   localStorage.setItem(`expenses_${currentUser}`, JSON.stringify(expenses));
-
   applyFilters();
 }
 
-function exportCSV(){
-  let rows=["Date,Category,Amount"];
-  expenses.forEach(e=>rows.push(`${e.date},${e.category},${e.amount}`));
-  let blob=new Blob([rows.join("\n")],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="Expense_Report.csv";
-  a.click();
-}
-
-// === SCREEN SWITCHING ===
+/* ================= SCREEN SWITCHING ================= */
 function switchScreen(id, el){
-  const loginError = document.getElementById("loginError");
-  
-  if(sessionStorage.getItem("loggedIn") !== "yes"){
-    // show inline message
-    loginError.innerText = "Please login first!";
-    // show login screen
-    document.getElementById("loginScreen").style.display = "block";
+  const loginError=document.getElementById("loginError");
+  if(sessionStorage.getItem("loggedIn")!=="yes"){ 
+    loginError.innerText="Please login first!";
+    document.getElementById("loginScreen").style.display="block";
     document.getElementById("mainApp").classList.add("hidden");
     return;
   }
-
-  loginError.innerText = ""; // clear any previous error
+  loginError.innerText="";
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   navItems.forEach(n=>n.classList.remove("active"));
@@ -450,92 +658,99 @@ function switchScreen(id, el){
   if(id==="home") renderHome();
 }
 
-
-// === HOME RENDER ===
+/* ================= HOME RENDER ================= */
 function renderHome(){
   const home = document.getElementById("home");
-  const displayName = username.value || localStorage.getItem("username") || 'User';
-  const recent = expenses.slice(-5).reverse();
+  const displayName = username.value || currentUser || 'User';
+  const recent = [...expenses];
+
   let recentHTML = recent.length ? `
-    <table style="width:100%;margin-top:12px;border-collapse:separate;border-spacing:0 8px;">
-      <thead><tr><th>Date</th><th>Category</th><th>Amount</th></tr></thead>
-      <tbody>
-        ${recent.map(e=>`<tr>
-          <td>${e.date}</td>
-          <td>${e.category}</td>
-          <td>${currency.value}${e.amount}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>` : `<p style="margin-top:12px;opacity:.7;text-align:center;">No expenses yet</p>`;
+    <div class="table-wrapper">
+      <table style="min-width:480px">
+
+        <thead>
+          <tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          ${recent.map(e=>`<tr>
+            <td>${e.date}</td>
+            <td>${e.category}</td>
+            <td>${e.descriptionType || "-"}</td>
+            <td>${currency.value}${e.amount}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : `<p style="margin-top:12px;opacity:.7;text-align:center;">No expenses yet</p>`;
+
+  let totalRecent = recent.reduce((s,e)=>s+Number(e.amount),0);
 
   home.innerHTML = `
     <div class="card">
       <div class="home-title">Expense Tracker</div>
       <div class="home-quote">Hello, ${displayName}! 😊💰 Track expenses • Control spending • Live happily</div>
       ${recentHTML}
-      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved</div>
+      <div class="total-caption">Recent Total</div>
+      <div class="total-box">${currency.value}${totalRecent}</div>
+      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.1 Dt:01/01/2026</div>
     </div>`;
 }
 
-
-// === DASHBOARD RENDER FUNCTIONS ===
-function renderInsight(){
-  const totalSpent = expenses.reduce((s,e)=>s+Number(e.amount),0);
-  userOutput.innerHTML =
-    "Total spent: <b>" + currency.value + totalSpent + "</b>";
+/* ================= CATEGORY DESCRIPTION ================= */
+function showCategoryDescription(){
+  const categorySelect=document.getElementById("category");
+  const descBox=document.getElementById("categoryDescription");
+  const descSelect=document.getElementById("descriptionType");
+  if(!categorySelect || !descBox || !descSelect) return;
+  const selected=categorySelect.value;
+  descBox.innerText="";
+  descSelect.innerHTML='<option value="">Select description</option>';
+  if(!selected) return;
+  descBox.innerText=categoryDescriptions[selected] || "";
+  (categoryDescriptionOptions[selected] || []).forEach(item=>{
+    const option=document.createElement("option");
+    option.value=item;
+    option.textContent=item;
+    descSelect.appendChild(option);
+  });
 }
 
-function renderBudget(){userOutput.innerHTML="Average per entry: <b>"+(expenses.length?(expenses.reduce((s,e)=>s+Number(e.amount),0)/expenses.length).toFixed(2):0)+"</b>";}
+/* ================= DASHBOARD ================= */
+function renderInsight(){
+  const totalSpent=expenses.reduce((s,e)=>s+Number(e.amount),0);
+  userOutput.innerHTML="Total spent: <b>"+currency.value+totalSpent+"</b>";
+}
 
 function renderBudget(){
-  const avg = expenses.length
-    ? (expenses.reduce((s,e)=>s+Number(e.amount),0) / expenses.length).toFixed(2)
-    : 0;
-
-  userOutput.innerHTML =
-    "Average per entry: <b>" + currency.value + avg + "</b>";
+  const avg = expenses.length ? (expenses.reduce((s,e)=>s+Number(e.amount),0)/expenses.length).toFixed(2) : 0;
+  userOutput.innerHTML="Average per entry: <b>"+currency.value+avg+"</b>";
 }
 
-function renderCategories(){let c={};expenses.forEach(e=>c[e.category]=(c[e.category]||0)+Number(e.amount));userOutput.innerHTML=Object.entries(c).map(x=>`${x[0]} : ${currency.value}${x[1]}`).join("<br>");}
+function renderCategories(){
+  let c={};
+  expenses.forEach(e=>c[e.category]=(c[e.category]||0)+Number(e.amount));
+  userOutput.innerHTML=Object.entries(c).map(x=>`${x[0]} : ${currency.value}${x[1]}`).join("<br>");
+}
+
 function renderPreference(){
-
-  if(expenses.length === 0){
-    userOutput.innerHTML = "No data";
-    return;
-  }
-
-  let stats = {};
-
-  expenses.forEach(e => {
-    if(!stats[e.category]){
-      stats[e.category] = { total: 0, count: 0 };
-    }
-    stats[e.category].total += Number(e.amount);
-    stats[e.category].count += 1;
+  if(expenses.length===0){ userOutput.innerHTML="No data"; return; }
+  let stats={};
+  expenses.forEach(e=>{
+    if(!stats[e.category]) stats[e.category]={total:0,count:0};
+    stats[e.category].total+=Number(e.amount);
+    stats[e.category].count+=1;
   });
-
-  let preferred = Object.entries(stats)
-    .sort((a, b) => 
-      b[1].total - a[1].total || b[1].count - a[1].count
-    )[0];
-
-  userOutput.innerHTML =
-    "Most preferred category: <b>" + preferred[0] + "</b><br>" +
-    "Total spent: " + currency.value + preferred[1].total + "<br>" +
-    "Purchases: " + preferred[1].count;
+  let preferred=Object.entries(stats).sort((a,b)=>b[1].total-a[1].total||b[1].count-a[1].count)[0];
+  userOutput.innerHTML="Most preferred category: <b>"+preferred[0]+"</b><br>Total spent: "+currency.value+preferred[1].total+"<br>Purchases: "+preferred[1].count;
 }
 
-
-// === MISC ===
+/* ================= MISC ================= */
 function toggleDarkMode(){document.body.classList.toggle("dark");}
 function saveCurrency(){
-  if(!currentUser) return; // safety check
+  if(!currentUser) return;
   localStorage.setItem(`currency_${currentUser}`, currency.value);
   applyFilters();
 }
 
-
-// INITIAL FILTER APPLY
 applyFilters();
 </script>
 </body>
