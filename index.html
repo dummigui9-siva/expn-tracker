@@ -49,14 +49,22 @@ body{
   transition:.35s;
 }
 
-.app{
-  max-width:420px;
-  margin:auto;
-  min-height:100vh;
-  padding-bottom:160px;
+.app {
+  max-width: 420px;
+  margin: auto;
+  min-height: 100vh;
+  padding-bottom: 120px; /* enough space so nav bar doesn't cover content */
 }
 
-.screen{display:none;padding:18px}
+
+.screen {
+  display: none;
+  padding: 18px;
+  max-height: calc(100vh - 20px); /* full viewport minus small top/bottom */
+  overflow-y: auto;               /* scroll if content exceeds screen */
+  scroll-behavior: smooth;        /* smooth scrolling */
+}
+
 .screen.active{display:block}
 
 /* ================= CARD ================= */
@@ -67,6 +75,14 @@ body{
   margin-bottom:18px;
   box-shadow:var(--shadow-soft);
 }
+
+/* Make cards scrollable inside screens if content is too long */
+.screen.active .card {
+  max-height: calc(100vh - 160px); /* viewport minus nav bar & padding */
+  overflow-y: auto;                /* enables vertical scroll if needed */
+  padding-bottom: 12px;            /* prevents last lines from being hidden */
+}
+
 
 /* ================= HOME ================= */
 .home-title{text-align:center;font-size:28px;font-weight:800}
@@ -209,72 +225,198 @@ button:hover{transform:translateY(-2px)}
 .stat:hover{transform:translateY(-2px)}
 .user-output{margin-top:16px;padding:14px;border-radius:18px;background:rgba(0,0,0,.12);font-size:14px}
 
-/* ================= NAV BAR (REFERENCE STYLE – SAFE) ================= */
+/* ================= NAV BAR (NAVY + DARK BROWN HALO) ================= */
 .bottom-nav{
-  position:fixed;
-  bottom:22px;
-  left:50%;
-  transform:translateX(-50%);
-  width:92%;
-  max-width:420px;
-  height:72px;
-  background:#D2691E;
-  border-radius:999px;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  box-shadow:0 25px 60px rgba(0,0,0,.55);
-  z-index:999;
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* navy blue background */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
 }
 
+/* Floating pill behind active icon */
+.floating-pill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  background: #654321; /* dark brown halo behind icon */
+  border-radius: 50%;
+  transform: translateY(-50%);
+  transition: left 0.35s cubic-bezier(.22,.61,.36,1);
+  z-index: 1;
+}
+
+/* ================= NAV BAR (NAVY + WHITE ICONS, NO HALO) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* navy blue background */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* ================= NAV BAR (NAVY + WHITE ICONS, ACTIVE POP-UP) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* navy blue background */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* ================= NAV BAR (NAVY + WHITE ICONS, ACTIVE NAV POP-UP) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* navy blue background */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* ================= NAV BAR (NAVY + WHITE ICONS, ACTIVE POP-UP) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* solid navy */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* ================= NAV BAR (NAVY + INTERACTIVE ICONS) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* solid navy */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* ================= NAV ITEMS ================= */
 .nav-item{
-  width:46px;
-  height:46px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  transition:
-    transform .45s cubic-bezier(.22,.61,.36,1),
-    background .35s,
-    box-shadow .35s;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: 999px;
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+  cursor: pointer;
+  z-index: 2;
 }
 
 .nav-item svg{
-  width:20px;
-  height:20px;
-  stroke:#ffffff;
-  stroke-width:2.2;
-  transition:.35s;
+  width: 24px;
+  height: 24px;
+  stroke: #ffffff; /* default icon color */
+  stroke-width: 2.2;
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), stroke 0.25s;
 }
 
-/* Active floating button */
+/* Active nav item pop-up + icon color change */
 .nav-item.active{
-  transform:translateY(-22px);
-  background:#ff914d;
-  box-shadow:
-    0 10px 25px rgba(0,0,0,.35),
-    0 0 0 6px rgba(255,145,77,.25);
+  transform: translateY(-8px); /* pop entire item */
 }
 
-.nav-item.active svg{
-  stroke:#ffffff;
+/* Active nav item pop-up + icon color + spin */
+.nav-item.active svg {
+  transform: scale(1.2);        /* pop the icon slightly */
+  stroke: #ffcc00;              /* gold icon color when active */
+  animation: spin 0.7s ease-out; /* spin once */
 }
 
-/* Curve cut under active icon */
-.nav-item.active::after{
-  content:"";
-  position:absolute;
-  bottom:-20px;
-  left:50%;
-  transform:translateX(-50%);
-  width:44px;
-  height:20px;
-  background:#0f2a2a;
-  border-radius:0 0 999px 999px;
-  z-index:-1;
+@keyframes popBounce {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+  70% { transform: translateY(-6px); }
+  100% { transform: translateY(-8px); }
 }
+
+/* Pop + bounce animation for nav item */
+@keyframes popBounce {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+  70% { transform: translateY(-6px); }
+  100% { transform: translateY(-8px); }
+}
+
+
+/* Remove floating-pill entirely */
+.floating-pill{
+  display: none !important;
+}
+
+
+/* Spin animation for navbar icon */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
 
 </style>
 </head>
@@ -435,6 +577,9 @@ RC V1.1 Dt:01/01/2026</p>
 
 <!-- NAV -->
 <div class="bottom-nav">
+<div class="floating-pill"></div>
+
+
   <div class="nav-item active" onclick="switchScreen('home',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
       <path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>
@@ -465,6 +610,7 @@ RC V1.1 Dt:01/01/2026</p>
 </div>
 
 <script>
+
 /* ================= JS ================= */
 const currency = document.getElementById("currency");
 const username = document.getElementById("username");
@@ -655,7 +801,44 @@ function switchScreen(id, el){
   document.getElementById(id).classList.add("active");
   navItems.forEach(n=>n.classList.remove("active"));
   el.classList.add("active");
+
+  navItems.forEach(n=>n.classList.remove("active"));
+el.classList.add("active");
+
+// 🌟 Change icon color + pop tab
+navItems.forEach(n => {
+  const icon = n.querySelector("svg");
+  if (n === el) {
+    // Active tab: pop + unique color
+    n.style.transform = "translateY(-8px)";
+    icon.style.transform = "scale(1.2)";
+    icon.style.stroke = "#ffcc00"; // gold for active
+    // Spin animation on click
+    icon.style.animation = "none";
+    void icon.offsetWidth; // force reflow
+    icon.style.animation = "spin 0.7s ease-out";
+  } else {
+    // Reset other tabs
+    n.style.transform = "translateY(0)";
+    icon.style.transform = "scale(1)";
+    icon.style.stroke = "#ffffff"; // default color
+    icon.style.animation = "none";
+  }
+});
+
+
+// ⚡ Pop nav item with bounce
+el.style.animation = "none";              // reset previous animation
+void el.offsetWidth;                       // force reflow
+el.style.animation = "popBounce 0.35s ease-out forwards"; // pop + bounce
+
+// ⚡ Change icon color smoothly
+svgIcon.style.stroke = "#ffcc00";         // active gold color
+
+
+  
   if(id==="home") renderHome();
+  
 }
 
 /* ================= HOME RENDER ================= */
@@ -751,7 +934,30 @@ function saveCurrency(){
   applyFilters();
 }
 
+
+// Step 4: position the floating pill under the active nav item on page load
+const activeNav = document.querySelector('.nav-item.active'); // find the active nav item
+if (activeNav) {
+  moveFloatingPill(activeNav); // move the pill under it
+}
+
 applyFilters();
+
+function moveFloatingPill(el) {
+  const nav = document.querySelector('.bottom-nav');
+  const pill = nav.querySelector('.floating-pill');
+  const navItems = nav.querySelectorAll('.nav-item');
+
+  // index of clicked nav-item
+  let index = Array.from(navItems).indexOf(el);
+
+  // width of each item
+  let spacing = nav.offsetWidth / navItems.length;
+
+  // center pill under icon
+  pill.style.left = `${spacing * index + (spacing - pill.offsetWidth)/2}px`;
+}
+
 </script>
 </body>
 </html>
