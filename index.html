@@ -1,1 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Expense Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+.hidden { display: none; }
+
+/* ================= THEME ================= */
+:root{
+  --bg1:#b4d4d2;
+  --bg2:#a2c7c5;
+  --card:#8fb8b6;
+  --text:#0f2a2a;
+  --nav:#8fb8b6;
+  --icon:#000000;
+  --icon-active:#000000;
+  --header:#a9cfcd;
+  --shadow-soft:0 14px 30px rgba(0,0,0,.28);
+  --shadow-emboss:inset 3px 3px 6px rgba(0,0,0,.18), inset -3px -3px 6px rgba(255,255,255,.45);
+  --btn-edit:#1f8f45;
+  --btn-delete:#b02a37;
+}
+
+body.dark{
+  --bg1:#121214;
+  --bg2:#1c1c1e;
+  --card:#262628;
+  --text:#f5f5f5;
+  --nav:#262628;
+  --icon:#000000;
+  --icon-active:#000000;
+  --header:#2f2f31;
+  --shadow-soft:0 18px 40px rgba(0,0,0,.7);
+  --shadow-emboss:inset 3px 3px 8px rgba(0,0,0,.7), inset -3px -3px 8px rgba(255,255,255,.08);
+  --btn-edit:#28a745;
+  --btn-delete:#dc3545;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:var(--text);
+  transition:.35s;
+}
+
+.app {
+  max-width: 420px;
+  margin: auto;
+  min-height: 100vh;
+  padding-bottom: 120px; /* enough space so nav bar doesn't cover content */
+}
+
+
+.screen {
+  display: none;
+  padding: 18px;
+  max-height: calc(100vh - 20px); /* full viewport minus small top/bottom */
+  overflow-y: auto;               /* scroll if content exceeds screen */
+  scroll-behavior: smooth;        /* smooth scrolling */
+}
+
+.screen.active{display:block}
+
+/* ================= CARD ================= */
+.card{
+  background:var(--card);
+  border-radius:28px;
+  padding:22px;
+  margin-bottom:18px;
+  box-shadow:var(--shadow-soft);
+}
+
+/* Make cards scrollable inside screens if content is too long */
+.screen.active .card {
+  max-height: calc(100vh - 160px); /* viewport minus nav bar & padding */
+  overflow-y: auto;                /* enables vertical scroll if needed */
+  padding-bottom: 12px;            /* prevents last lines from being hidden */
+}
+
+
+/* ================= HOME ================= */
+.home-title{text-align:center;font-size:28px;font-weight:800}
+.home-quote{text-align:center;margin-top:6px;opacity:.85}
+.home-icons{margin-top:20px;font-size:14px;line-height:1.8}
+.home-icons div{display:flex;align-items:center;gap:12px}
+.home-icons svg{width:18px;height:18px;stroke:var(--icon);stroke-width:2.2}
+.home-disclaimer{margin-top:22px;font-size:10px;opacity:.35;text-align:center}
+
+/* ================= FORM ================= */
+label{font-size:13px;font-weight:600;margin-top:14px;display:block}
+input,select{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:18px;
+  background:var(--header);
+  margin-top:6px;
+  color:var(--text);
+}
+
+/* ================= BUTTON ================= */
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:999px;
+  margin-top:18px;
+  background:var(--card);
+  font-weight:600;
+  box-shadow:var(--shadow-emboss);
+  transition:.25s;
+  color:var(--text);
+}
+body.dark button{color:#f5f5f5}
+button:hover{transform:translateY(-2px)}
+
+/* ================= TABLE ================= */
+.total-caption{text-align:center;font-size:14px;opacity:.8}
+.total-box{text-align:center;font-size:22px;font-weight:700;margin-bottom:14px}
+
+/* Table wrapper for scroll on small screens */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;          /* ✅ vertical scroll */
+  max-height: 260px;         /* ✅ FIXED CARD HEIGHT */
+  margin-top: 12px;
+  -webkit-overflow-scrolling: touch;
+
+  scroll-behavior: smooth;   /* ✅ smooth programmatic scroll */
+  overscroll-behavior: contain; /* ✅ prevents page bounce */
+ 
+}
+
+/* ================= SCROLL SHADOW INDICATORS ================= */
+
+.table-wrapper {
+  position: relative;
+}
+
+/* Top shadow */
+.table-wrapper::before {
+  content: "";
+  position: sticky;
+  top: 0;
+  height: 12px;
+  display: block;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.25),
+    rgba(0,0,0,0)
+  );
+  z-index: 4;
+}
+
+/* Bottom shadow */
+.table-wrapper::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  height: 12px;
+  display: block;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.25),
+    rgba(0,0,0,0)
+  );
+  z-index: 4;
+}
+
+
+
+.table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 480px;
+}
+
+.table-wrapper th {
+  background: #4CAF50;
+  color: #fff;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.table-wrapper td {
+  background: var(--card);
+  text-align: center;
+  padding: 10px 8px;
+  border-radius: 12px;
+}
+
+.table-wrapper tr:nth-child(even) td {
+  opacity: 0.9;
+}
+
+@media (max-width: 500px) {
+  .table-wrapper th, .table-wrapper td {
+    padding: 8px 6px;
+    font-size: 13px;
+  }
+}
+
+/* ================= FILTER DROPDOWN ================= */
+#categoryFilter{border-radius:999px;padding:12px 16px;background:var(--header);color:var(--text);border:none;margin-bottom:16px;cursor:pointer}
+
+/* ================= ACTION BUTTONS ================= */
+.action-btn{padding:6px 16px;border-radius:999px;font-size:12px;font-weight:600;border:none;box-shadow:var(--shadow-emboss);color:#fff}
+.edit-btn{background:var(--btn-edit)}
+.delete-btn{background:var(--btn-delete)}
+
+/* ================= USER DASHBOARD ================= */
+.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stat{padding:16px;border-radius:999px;background:var(--card);text-align:center;font-weight:600;cursor:pointer;box-shadow:var(--shadow-emboss)}
+.stat:hover{transform:translateY(-2px)}
+.user-output{margin-top:16px;padding:14px;border-radius:18px;background:rgba(0,0,0,.12);font-size:14px}
+
+/* ================= NAV BAR (NAVY + DARK BROWN HALO) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* navy blue background */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* Floating pill behind active icon */
+.floating-pill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  background: #654321; /* dark brown halo behind icon */
+  border-radius: 50%;
+  transform: translateY(-50%);
+  transition: left 0.35s cubic-bezier(.22,.61,.36,1);
+  z-index: 1;
+}
+
+/* ================= NAV BAR (NAVY + WHITE ICONS, NO HALO) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* navy blue background */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* ================= NAV BAR (NAVY + WHITE ICONS, ACTIVE POP-UP) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* navy blue background */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* ================= NAV BAR (NAVY + WHITE ICONS, ACTIVE NAV POP-UP) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* navy blue background */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* ================= NAV BAR (NAVY + WHITE ICONS, ACTIVE POP-UP) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* solid navy */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* ================= NAV BAR (NAVY + INTERACTIVE ICONS) ================= */
+.bottom-nav{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  height: 56px;
+  background: #001f3f; /* solid navy */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-radius: 999px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* ================= NAV ITEMS ================= */
+.nav-item{
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: 999px;
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.nav-item svg{
+  width: 24px;
+  height: 24px;
+  stroke: #ffffff; /* default icon color */
+  stroke-width: 2.2;
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), stroke 0.25s;
+}
+
+/* Active nav item pop-up + icon color change */
+.nav-item.active{
+  transform: translateY(-8px); /* pop entire item */
+}
+
+/* Active nav item pop-up + icon color + spin */
+.nav-item.active svg {
+  transform: scale(1.2);        /* pop the icon slightly */
+  stroke: #ffcc00;              /* gold icon color when active */
+  animation: spin 0.7s ease-out; /* spin once */
+}
+
+@keyframes popBounce {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+  70% { transform: translateY(-6px); }
+  100% { transform: translateY(-8px); }
+}
+
+/* Pop + bounce animation for nav item */
+@keyframes popBounce {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+  70% { transform: translateY(-6px); }
+  100% { transform: translateY(-8px); }
+}
+
+
+/* Remove floating-pill entirely */
+.floating-pill{
+  display: none !important;
+}
+
+
+/* Spin animation for navbar icon */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="app">
+  <div class="screen active">
+    <div class="card" style="margin-top:40%;text-align:center">
+      <h2>Expense Tracker</h2>
+      <p style="opacity:.7">Enter your name to continue</p>
+      <input id="loginName" placeholder="Your name">
+      <p id="loginError" style="color:red; opacity:0.8; margin-top:10px;"></p>
+      <button onclick="login()">Proceed</button>
+      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.1 Dt:01/01/2026 </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" class="app hidden">
+
+  <!-- HOME -->
+  <div id="home" class="screen active"></div>
+
+  <!-- ADD -->
+  <div id="add" class="screen">
+    <div class="card">
+      <label>User Name</label>
+      <input id="username">
+      <label>Currency</label>
+      <select id="currency" onchange="saveCurrency()">
+        <option value="₹">INR</option>
+        <option value="$">USD</option>
+        <option value="€">EUR</option>
+      </select>
+      <label>Amount</label>
+      <input type="number" id="amount">
+      <label>Category</label>    
+      <select id="category" onchange="showCategoryDescription()">
+        <option value="">Select</option>
+        <option>Food</option>
+        <option>Travel</option>
+        <option>Shopping</option>
+        <option>Fuel</option>
+        <option>FASTag</option>
+        <option>Miscellaneous</option>
+      </select>
+
+      <div id="categoryDescription" style="
+        margin-top:8px;
+        font-size:12px;
+        opacity:0.8;
+        padding-left:6px;
+      "></div>
+
+      <label>Description Type</label>
+      <select id="descriptionType">
+        <option value="">Select description</option>
+      </select>
+
+      <label>Date</label>
+      <input type="date" id="date">
+      <button id="addBtn" onclick="addExpense()">Add Expense</button>
+    </div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div id="list" class="screen">
+    <div class="card">
+      <select id="categoryFilter" onchange="applyFilters()">
+        <option value="All">All</option>
+        <option>Food</option>
+        <option>Travel</option>
+        <option>Shopping</option>
+        <option>Fuel</option>
+        <option>FASTag</option>
+        <option>Miscellaneous</option>
+      </select>
+
+      <div class="total-caption">Total Expenses</div>
+      <div class="total-box" id="total">₹0</div>
+      <div class="table-wrapper">
+        <table style="min-width:480px">
+
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="summaryBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER SETTINGS -->
+  <div id="settings" class="screen">
+    <div class="card">
+      <h3 id="profileName">User</h3>
+      <div class="dashboard">
+        <div class="stat" onclick="renderInsight()">Insights</div>
+        <div class="stat" onclick="renderBudget()">Budget</div>
+        <div class="stat" onclick="renderCategories()">Categories</div>
+        <div class="stat" onclick="renderPreference()">Preferences</div>
+      </div>
+      <div class="user-output" id="userOutput">Click any tile above to view details.</div>
+      <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+      <button onclick="exportCSV()">Export CSV</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- INSTRUCTIONS TAB -->
+  <div id="instructions" class="screen">
+    <div class="card">
+      <h3>Expense Tracker - User Guide</h3>
+      <p>This simple application helps you monitor your daily expenses. Follow the tabs below to understand its features:</p>
+      
+      <div style="margin-top:16px;">
+        <strong>1. Home Tab:</strong>
+        <p>Welcome screen displaying your name and a summary of all expenses. The recent expenses table shows the latest entries and total spent.</p>
+      </div>
+
+      <div style="margin-top:16px;">
+        <strong>2. Add Tab:</strong>
+        <p>Use this tab to add new expenses. Fill your name, amount, category, description, and date. Click <b>Add Expense</b> to save.</p>
+        <p>Updating an expense is done via the <b>Expense tab</b> (3rd tab) using the Edit button.</p>
+      </div>
+
+      <div style="margin-top:16px;">
+        <strong>3. Expense Tab:</strong>
+        <p>Displays all expenses in a table. You can <b>Edit</b> or <b>Delete</b> entries. Editing redirects you to the Add tab.</p>
+      </div>
+
+      <div style="margin-top:16px;">
+        <strong>4. User Tab:</strong>
+        <p>This tab contains:</p>
+        <ul>
+          <li><b>Insights:</b> Overview of total spending.</li>
+          <li><b>Budget:</b> Average spending per entry.</li>
+          <li><b>Categories:</b> Spending grouped by category.</li>
+          <li><b>Preferences:</b> Most preferred category based on total spending and frequency.</li>
+          <li>Options to <b>Export CSV</b>, <b>Toggle Dark Mode</b>, and <b>Logout</b>.</li>
+        </ul>
+      </div>
+
+      <p style="margin-top:16px;">💡 Tip: Start by entering your name in the Home tab, then add expenses, view summaries, and explore statistics in the User tab.<br><br>© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved
+RC V1.1 Dt:01/01/2026</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV -->
+<div class="bottom-nav">
+<div class="floating-pill"></div>
+
+
+  <div class="nav-item active" onclick="switchScreen('home',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>
+    </svg>
+  </div>
+  <div class="nav-item" onclick="switchScreen('add',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+  </div>
+  <div class="nav-item" onclick="switchScreen('list',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <path d="M4 4h16v16H4z"/><path d="M4 10h16"/><path d="M10 4v16"/>
+    </svg>
+  </div>
+  <div class="nav-item" onclick="switchScreen('settings',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M4 20c2-4 14-4 16 0"/>
+    </svg>
+  </div>
+  <div class="nav-item" onclick="switchScreen('instructions',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h0"/>
+    </svg>
+  </div>
+</div>
+
+<script>
+
+/* ================= JS ================= */
+const currency = document.getElementById("currency");
+const username = document.getElementById("username");
+const profileName = document.getElementById("profileName");
+const amount = document.getElementById("amount");
+const category = document.getElementById("category");
+const date = document.getElementById("date");
+const addBtn = document.getElementById("addBtn");
+const total = document.getElementById("total");
+const summaryBody = document.getElementById("summaryBody");
+const userOutput = document.getElementById("userOutput");
+const categoryFilter = document.getElementById("categoryFilter");
+const navItems = document.querySelectorAll(".nav-item");
+const loginName = document.getElementById("loginName");
+
+const categoryDescriptionOptions = {
+  Food: ["Breakfast", "Lunch", "Dinner", "Snacks", "Groceries"],
+  Travel: ["Bus", "Train", "Cab", "Flight", "Metro"],
+  Shopping: ["Clothes", "Electronics", "Accessories", "Online Purchase"],
+  Fuel: ["Petrol", "Diesel", "CNG", "EV Charging"],
+  FASTag: ["Highway Toll", "Parking Toll"],
+  Miscellaneous: ["Medical", "Repair", "Donation", "Other"]
+};
+
+const categoryDescriptions = {
+  Food: "Meals, snacks, groceries, dining out.",
+  Travel: "Bus, train, cab, flight, metro travel.",
+  Shopping: "Clothes, electronics, personal purchases.",
+  Fuel: "Petrol, diesel, CNG, EV charging.",
+  FASTag: "Highway and parking tolls.",
+  Miscellaneous: "Other uncategorized expenses."
+};
+
+let expenses = [];
+let currentUser = sessionStorage.getItem("currentUser") || null;
+let editId = null;
+
+currency.value = currentUser ? (localStorage.getItem(`currency_${currentUser}`) || "₹") : "₹";
+username.value = "";
+profileName.innerText = "User";
+
+/* ================= LOGIN ================= */
+function login(){
+  const name = loginName.value.trim();
+  const loginError = document.getElementById("loginError");
+  if(!name){ loginError.innerText="Please enter your name to continue"; return; }
+  loginError.innerText = "";
+  currentUser = name;
+  currency.value = localStorage.getItem(`currency_${currentUser}`) || "₹";
+  const saved = localStorage.getItem(`expenses_${currentUser}`);
+  expenses = saved ? JSON.parse(saved) : [];
+  username.value = currentUser;
+  profileName.innerText = currentUser;
+  sessionStorage.setItem("loggedIn","yes");
+  sessionStorage.setItem("currentUser",currentUser);
+  initApp();
+}
+
+function logout(){
+  sessionStorage.removeItem("loggedIn");
+  location.reload();
+}
+
+function initApp(){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("mainApp").classList.remove("hidden");
+
+  username.value = currentUser;   // ✅ AUTO-FILL USER NAME
+
+  renderHome();
+  applyFilters();
+}
+
+
+if(sessionStorage.getItem("loggedIn")==="yes" && sessionStorage.getItem("currentUser")){
+  currentUser=sessionStorage.getItem("currentUser");
+  const saved = localStorage.getItem(`expenses_${currentUser}`);
+  currency.value = localStorage.getItem(`currency_${currentUser}`) || "₹";
+  expenses = saved ? JSON.parse(saved) : [];
+  profileName.innerText=currentUser;
+  initApp();
+}
+
+/* ================= EXPENSE FUNCTIONS ================= */
+function addExpense(){
+  if(!amount.value || !category.value || !date.value) return;
+  const descValue = document.getElementById("descriptionType").value;
+  if(editId){
+    expenses = expenses.map(e => e.id===editId ? {...e, amount: amount.value, category: category.value, date: date.value, descriptionType: descValue} : e);
+    editId = null;
+    addBtn.innerText = "Add Expense";
+  } else {
+    expenses.push({id: Date.now(), amount: amount.value, category: category.value, descriptionType: descValue, date: date.value});
+  }
+  localStorage.setItem(`expenses_${currentUser}`, JSON.stringify(expenses));
+  amount.value = date.value = "";
+  category.selectedIndex = 0;
+  document.getElementById("categoryDescription").innerText = "";
+  document.getElementById("descriptionType").innerHTML = '<option value="">Select description</option>';
+  applyFilters();
+  renderHome(); // reflect changes on home
+}
+
+/* ================= EXPORT CSV (Professional) ================= */
+function exportCSV(){
+  if(!currentUser || !expenses.length) return alert("No expenses to export!");
+  let totalAmount = expenses.reduce((s,e)=>s+Number(e.amount),0);
+  let rows = [];
+  rows.push(["User Name", currentUser]);
+  rows.push(["Total Amount", totalAmount]);
+  rows.push([]);
+  rows.push(["Date","Category","Description","Amount"]);
+  expenses.forEach(e=>{
+    rows.push([e.date,e.category,e.descriptionType || "",e.amount]);
+  });
+  rows.push([]);
+  rows.push(["Total","", "", totalAmount]);
+
+  let csvContent = "data:text/csv;charset=utf-8," 
+    + rows.map(e => e.map(a=>`"${a}"`).join(",")).join("\n");
+
+  const a = document.createElement("a");
+  a.href = encodeURI(csvContent);
+  a.download = `Expense_Report_${currentUser}.csv`;
+  a.click();
+}
+
+/* ================= FILTER & APPLY ================= */
+function applyFilters(){
+  let list = [...expenses];
+  if(categoryFilter && categoryFilter.value !== "All"){
+    list = list.filter(e => e.category === categoryFilter.value);
+  }
+  total.innerText = currency.value + list.reduce((s,e)=>s+Number(e.amount),0);
+  summaryBody.innerHTML = "";
+  list.forEach(e=>{
+    summaryBody.innerHTML+=`
+      <tr>
+        <td>${e.date}</td>
+        <td>${e.category}</td>
+        <td>${e.descriptionType || "-"}</td>
+        <td>${currency.value}${e.amount}</td>
+        <td>
+          <button class="action-btn edit-btn" onclick="editExpense(${e.id})">Edit</button>
+          <button class="action-btn delete-btn" onclick="deleteExpense(${e.id})">Del</button>
+        </td>
+      </tr>`; 
+  });
+  renderHome();
+}
+
+/* ===== AUTO-SCROLL TO LATEST ENTRY ===== */
+const wrapper = document.querySelector(".screen.active .table-wrapper");
+if(wrapper){
+  wrapper.scrollTop = wrapper.scrollHeight;
+}
+
+/* ================= EDIT & DELETE ================= */
+function editExpense(id){
+  let e = expenses.find(x=>x.id===id);
+  amount.value = e.amount;
+  category.value = e.category;
+  date.value = e.date;
+  document.getElementById("descriptionType").value = e.descriptionType || "";
+  editId = id;
+  addBtn.innerText = "Update Expense";
+  switchScreen('add', navItems[1]);
+  showCategoryDescription();
+}
+
+function deleteExpense(id){
+  expenses = expenses.filter(e=>e.id!==id);
+  localStorage.setItem(`expenses_${currentUser}`, JSON.stringify(expenses));
+  applyFilters();
+}
+
+/* ================= SCREEN SWITCHING ================= */
+function switchScreen(id, el){
+  const loginError=document.getElementById("loginError");
+  if(sessionStorage.getItem("loggedIn")!=="yes"){ 
+    loginError.innerText="Please login first!";
+    document.getElementById("loginScreen").style.display="block";
+    document.getElementById("mainApp").classList.add("hidden");
+    return;
+  }
+  loginError.innerText="";
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  navItems.forEach(n=>n.classList.remove("active"));
+  el.classList.add("active");
+
+  navItems.forEach(n=>n.classList.remove("active"));
+el.classList.add("active");
+
+// 🌟 Change icon color + pop tab
+navItems.forEach(n => {
+  const icon = n.querySelector("svg");
+  if (n === el) {
+    // Active tab: pop + unique color
+    n.style.transform = "translateY(-8px)";
+    icon.style.transform = "scale(1.2)";
+    icon.style.stroke = "#ffcc00"; // gold for active
+    // Spin animation on click
+    icon.style.animation = "none";
+    void icon.offsetWidth; // force reflow
+    icon.style.animation = "spin 0.7s ease-out";
+  } else {
+    // Reset other tabs
+    n.style.transform = "translateY(0)";
+    icon.style.transform = "scale(1)";
+    icon.style.stroke = "#ffffff"; // default color
+    icon.style.animation = "none";
+  }
+});
+
+
+// ⚡ Pop nav item with bounce
+el.style.animation = "none";              // reset previous animation
+void el.offsetWidth;                       // force reflow
+el.style.animation = "popBounce 0.35s ease-out forwards"; // pop + bounce
+
+// ⚡ Change icon color smoothly
+svgIcon.style.stroke = "#ffcc00";         // active gold color
+
+
+  
+  if(id==="home") renderHome();
+  
+}
+
+/* ================= HOME RENDER ================= */
+function renderHome(){
+  const home = document.getElementById("home");
+  const displayName = username.value || currentUser || 'User';
+  const recent = [...expenses];
+
+  let recentHTML = recent.length ? `
+    <div class="table-wrapper">
+      <table style="min-width:480px">
+
+        <thead>
+          <tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          ${recent.map(e=>`<tr>
+            <td>${e.date}</td>
+            <td>${e.category}</td>
+            <td>${e.descriptionType || "-"}</td>
+            <td>${currency.value}${e.amount}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : `<p style="margin-top:12px;opacity:.7;text-align:center;">No expenses yet</p>`;
+
+  let totalRecent = recent.reduce((s,e)=>s+Number(e.amount),0);
+
+  home.innerHTML = `
+    <div class="card">
+      <div class="home-title">Expense Tracker</div>
+      <div class="home-quote">Hello, ${displayName}! 😊💰 Track expenses • Control spending • Live happily</div>
+      ${recentHTML}
+      <div class="total-caption">Recent Total</div>
+      <div class="total-box">${currency.value}${totalRecent}</div>
+      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.1 Dt:01/01/2026</div>
+    </div>`;
+}
+
+/* ================= CATEGORY DESCRIPTION ================= */
+function showCategoryDescription(){
+  const categorySelect=document.getElementById("category");
+  const descBox=document.getElementById("categoryDescription");
+  const descSelect=document.getElementById("descriptionType");
+  if(!categorySelect || !descBox || !descSelect) return;
+  const selected=categorySelect.value;
+  descBox.innerText="";
+  descSelect.innerHTML='<option value="">Select description</option>';
+  if(!selected) return;
+  descBox.innerText=categoryDescriptions[selected] || "";
+  (categoryDescriptionOptions[selected] || []).forEach(item=>{
+    const option=document.createElement("option");
+    option.value=item;
+    option.textContent=item;
+    descSelect.appendChild(option);
+  });
+}
+
+/* ================= DASHBOARD ================= */
+function renderInsight(){
+  const totalSpent=expenses.reduce((s,e)=>s+Number(e.amount),0);
+  userOutput.innerHTML="Total spent: <b>"+currency.value+totalSpent+"</b>";
+}
+
+function renderBudget(){
+  const avg = expenses.length ? (expenses.reduce((s,e)=>s+Number(e.amount),0)/expenses.length).toFixed(2) : 0;
+  userOutput.innerHTML="Average per entry: <b>"+currency.value+avg+"</b>";
+}
+
+function renderCategories(){
+  let c={};
+  expenses.forEach(e=>c[e.category]=(c[e.category]||0)+Number(e.amount));
+  userOutput.innerHTML=Object.entries(c).map(x=>`${x[0]} : ${currency.value}${x[1]}`).join("<br>");
+}
+
+function renderPreference(){
+  if(expenses.length===0){ userOutput.innerHTML="No data"; return; }
+  let stats={};
+  expenses.forEach(e=>{
+    if(!stats[e.category]) stats[e.category]={total:0,count:0};
+    stats[e.category].total+=Number(e.amount);
+    stats[e.category].count+=1;
+  });
+  let preferred=Object.entries(stats).sort((a,b)=>b[1].total-a[1].total||b[1].count-a[1].count)[0];
+  userOutput.innerHTML="Most preferred category: <b>"+preferred[0]+"</b><br>Total spent: "+currency.value+preferred[1].total+"<br>Purchases: "+preferred[1].count;
+}
+
+/* ================= MISC ================= */
+function toggleDarkMode(){document.body.classList.toggle("dark");}
+function saveCurrency(){
+  if(!currentUser) return;
+  localStorage.setItem(`currency_${currentUser}`, currency.value);
+  applyFilters();
+}
+
+
+// Step 4: position the floating pill under the active nav item on page load
+const activeNav = document.querySelector('.nav-item.active'); // find the active nav item
+if (activeNav) {
+  moveFloatingPill(activeNav); // move the pill under it
+}
+
+applyFilters();
+
+function moveFloatingPill(el) {
+  const nav = document.querySelector('.bottom-nav');
+  const pill = nav.querySelector('.floating-pill');
+  const navItems = nav.querySelectorAll('.nav-item');
+
+  // index of clicked nav-item
+  let index = Array.from(navItems).indexOf(el);
+
+  // width of each item
+  let spacing = nav.offsetWidth / navItems.length;
+
+  // center pill under icon
+  pill.style.left = `${spacing * index + (spacing - pill.offsetWidth)/2}px`;
+}
+
+
+</script>
+</body>
+</html>
 
