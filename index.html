@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-.hidden { display: none; }
+.hidden { display: none !important; }
+
 
 /* ================= THEME ================= */
 :root{
@@ -56,7 +57,7 @@ body{
   padding-bottom: 120px; /* enough space so nav bar doesn't cover content */
 }
 
-
+/* Screen handles scrolling */
 .screen {
   display: none;
   padding: 18px;
@@ -76,11 +77,11 @@ body{
   box-shadow:var(--shadow-soft);
 }
 
-/* Make cards scrollable inside screens if content is too long */
+/* Remove extra vertical scroll from cards inside screen */
 .screen.active .card {
-  max-height: calc(100vh - 160px); /* viewport minus nav bar & padding */
-  overflow-y: auto;                /* enables vertical scroll if needed */
-  padding-bottom: 12px;            /* prevents last lines from being hidden */
+  max-height: none;         /* remove fixed height */
+  overflow-y: visible;      /* let content flow naturally */
+  padding-bottom: 12px;
 }
 
 
@@ -124,18 +125,16 @@ button:hover{transform:translateY(-2px)}
 .total-caption{text-align:center;font-size:14px;opacity:.8}
 .total-box{text-align:center;font-size:22px;font-weight:700;margin-bottom:14px}
 
-/* Table wrapper for scroll on small screens */
+/* Table wrapper only scrolls horizontally if needed */
 .table-wrapper {
   width: 100%;
-  overflow-x: auto;
-  overflow-y: auto;          /* ✅ vertical scroll */
-  max-height: 260px;         /* ✅ FIXED CARD HEIGHT */
+  overflow-x: auto;         /* horizontal scroll if table is wide */
+  overflow-y: visible;      /* remove inner vertical scroll */
+  max-height: none;          /* remove fixed height */
   margin-top: 12px;
   -webkit-overflow-scrolling: touch;
-
-  scroll-behavior: smooth;   /* ✅ smooth programmatic scroll */
-  overscroll-behavior: contain; /* ✅ prevents page bounce */
- 
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }
 
 /* ================= SCROLL SHADOW INDICATORS ================= */
@@ -425,13 +424,35 @@ button:hover{transform:translateY(-2px)}
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" class="app">
   <div class="screen active">
-    <div class="card" style="margin-top:40%;text-align:center">
+    <div class="card" style="margin-top:40%; text-align:center">
       <h2>Expense Tracker</h2>
       <p style="opacity:.7">Enter your name to continue</p>
-      <input id="loginName" placeholder="Your name">
+
+      <!-- LOGIN INPUTS -->
+      <input id="loginName" placeholder="Your name" style="margin-top:12px;">
+      <input id="loginEmail" type="email" placeholder="Email address" style="margin-top:12px;">
+      <input id="loginPassword" type="password" placeholder="Password" style="margin-top:12px;">
       <p id="loginError" style="color:red; opacity:0.8; margin-top:10px;"></p>
-      <button onclick="login()">Proceed</button>
-      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.2 Dt:03/01/2026 </div>
+      <button onclick="login()" style="margin-top:12px;">Proceed</button>
+
+      <!-- FORGOT PASSWORD SECTION -->
+      <hr style="margin:20px 0; opacity:0.3;">
+      <h3 style="margin-bottom:8px; opacity:0.7;">Forgot Password?</h3>
+      <input id="forgotEmail" type="email" placeholder="Enter your registered email" style="margin-top:12px;">
+      <p id="forgotMessage" style="margin-top:8px; opacity:0.8; white-space: pre-line;"></p>
+      <button onclick="forgotPasswordUI()" style="
+        margin-top:10px;
+        background:#ffcc00;
+        color:#000;
+        font-weight:600;
+        border:none;
+        border-radius:999px;
+        padding:12px;
+      ">Recover Password</button>
+
+      <div class="home-disclaimer" style="margin-top:20px;">
+        © 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.2 Dt:03/01/2026
+      </div>
     </div>
   </div>
 </div>
@@ -534,49 +555,75 @@ button:hover{transform:translateY(-2px)}
     </div>
   </div>
 
+  
   <!-- INSTRUCTIONS TAB -->
-  <div id="instructions" class="screen">
-    <div class="card">
-      <h3>Expense Tracker - User Guide</h3>
-      <p>This simple application helps you monitor your daily expenses. Follow the tabs below to understand its features:</p>
-      
-      <div style="margin-top:16px;">
-        <strong>1. Home Tab:</strong>
-        <p>Welcome screen displaying your name and a summary of all expenses. The recent expenses table shows the latest entries and total spent.</p>
-      </div>
-
-      <div style="margin-top:16px;">
-        <strong>2. Add Tab:</strong>
-        <p>Use this tab to add new expenses. Fill your name, amount, category, description, and date. Click <b>Add Expense</b> to save.</p>
-        <p>Updating an expense is done via the <b>Expense tab</b> (3rd tab) using the Edit button.</p>
-      </div>
-
-      <div style="margin-top:16px;">
-        <strong>3. Expense Tab:</strong>
-        <p>Displays all expenses in a table. You can <b>Edit</b> or <b>Delete</b> entries. Editing redirects you to the Add tab.</p>
-      </div>
-
-      <div style="margin-top:16px;">
-        <strong>4. User Tab:</strong>
-        <p>This tab contains:</p>
-        <ul>
-          <li><b>Insights:</b> Overview of total spending.</li>
-          <li><b>Budget:</b> Average spending per entry.</li>
-          <li><b>Categories:</b> Spending grouped by category.</li>
-          <li><b>Preferences:</b> Most preferred category based on total spending and frequency.</li>
-          <li>Options to <b>Export CSV</b>, <b>Toggle Dark Mode</b>, and <b>Logout</b>.</li>
-        </ul>
-      </div>
-
-      <p style="margin-top:16px;">💡 Tip: Start by entering your name in the Home tab, then add expenses, view summaries, and explore statistics in the User tab.<br><br>© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved
-RC V1.2 Dt:03/01/2026</p>
+<div id="instructions" class="screen">
+  <div class="card">
+    <h3>Expense Tracker - User Guide</h3>
+    <p>This simple application helps you monitor your daily expenses. Follow the tabs below to understand its features:</p>
+    
+    <div style="margin-top:16px;">
+      <strong>1. Login / Registration:</strong>
+      <p>
+        - Enter your <b>Name</b>, <b>Email</b>, and <b>Password</b> to login.<br>
+        - If you are a new user (email not registered), the app will automatically create an account for you.<br>
+        - Username must be unique. If the username exists with another email, registration will be blocked.<br>
+        - Successful login will take you to the Home screen where you can view and manage expenses.
+      </p>
     </div>
+
+    <div style="margin-top:16px;">
+      <strong>2. Reset Password: <p style="color:red;">"Reset Password, function yet to be implemented"</p></strong>
+      <p>
+        - If you forget your password, enter your <b>registered email</b> and your <b>new password</b> in the Reset Password section.<br>
+        - Click <b>Reset Password</b>. If the email exists, your password will be updated and you can login with the new password.<br>
+        - Make sure to enter both the registered email and a new password to successfully reset.
+      </p>
+    </div>
+
+    <div style="margin-top:16px;">
+      <strong>3. Home Tab:</strong>
+      <p>
+        Welcome screen displaying your name and a summary of all expenses. The recent expenses table shows the latest entries and total spent.
+      </p>
+    </div>
+
+    <div style="margin-top:16px;">
+      <strong>4. Add Tab:</strong>
+      <p>
+        Use this tab to add new expenses. Fill your name, amount, category, description, and date. Click <b>Add Expense</b> to save.<br>
+        Updating an expense is done via the <b>Expense tab</b> using the Edit button.
+      </p>
+    </div>
+
+    <div style="margin-top:16px;">
+      <strong>5. Expense Tab:</strong>
+      <p>
+        Displays all expenses in a table. You can <b>Edit</b> or <b>Delete</b> entries. Editing redirects you to the Add tab.
+      </p>
+    </div>
+
+    <div style="margin-top:16px;">
+      <strong>6. User Tab:</strong>
+      <p>This tab contains:</p>
+      <ul>
+        <li><b>Insights:</b> Overview of total spending.</li>
+        <li><b>Budget:</b> Average spending per entry.</li>
+        <li><b>Categories:</b> Spending grouped by category.</li>
+        <li><b>Preferences:</b> Most preferred category based on total spending and frequency.</li>
+        <li>Options to <b>Export CSV</b>, <b>Toggle Dark Mode</b>, and <b>Logout</b>.</li>
+      </ul>
+    </div>
+
+    <p style="margin-top:16px;">💡 Tip: Start by entering your name in the Home tab, then add expenses, view summaries, explore statistics, or reset your password if needed.<br><br>© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br>RC V1.3 Dt:05/01/2026</p>
   </div>
+</div>
+
 
 </div>
 
 <!-- NAV -->
-<div class="bottom-nav">
+<div class="bottom-nav hidden">
 <div class="floating-pill"></div>
 
 
@@ -626,6 +673,10 @@ const categoryFilter = document.getElementById("categoryFilter");
 const navItems = document.querySelectorAll(".nav-item");
 const loginName = document.getElementById("loginName");
 
+const loginEmail = document.getElementById("loginEmail");
+const loginPassword = document.getElementById("loginPassword");
+
+
 const categoryDescriptionOptions = {
   Food: ["Breakfast", "Lunch", "Dinner", "Snacks", "Groceries"],
   Travel: ["Bus", "Train", "Cab", "Flight", "Metro"],
@@ -646,6 +697,7 @@ const categoryDescriptions = {
 
 let expenses = [];
 let currentUser = sessionStorage.getItem("currentUser") || null;
+let users = JSON.parse(localStorage.getItem("users")) || {};
 let editId = null;
 
 currency.value = currentUser ? (localStorage.getItem(`currency_${currentUser}`) || "₹") : "₹";
@@ -655,10 +707,65 @@ profileName.innerText = "User";
 /* ================= LOGIN ================= */
 function login(){
   const name = loginName.value.trim();
+const email = loginEmail.value.trim();
+const password = loginPassword.value;
+
   const loginError = document.getElementById("loginError");
   if(!name){ loginError.innerText="Please enter your name to continue"; return; }
   loginError.innerText = "";
+  console.log("LOGIN INPUTS:", name, email, password);
+  // ---------- AUTH LOGIC START ----------
+
+// basic validation
+if (!email || !password) {
+  loginError.innerText = "Email and password are required";
+  return;
+}
+
+// CASE 1: Email already exists → LOGIN
+if (users[email]) {
+
+  // username mismatch
+  if (users[email].username !== name) {
+    loginError.innerText = "Email is already linked to another username";
+    return;
+  }
+
+  // password mismatch
+  if (users[email].password !== password) {
+    loginError.innerText = "Incorrect password";
+    return;
+  }
+
+  // ✅ successful login
   currentUser = name;
+}
+
+// CASE 2: New email → REGISTER
+else {
+
+  // check if username already used with a different email
+  for (let e in users) {
+    if (users[e].username === name) {
+      loginError.innerText = "Username already exists. Please login.";
+      return;
+    }
+  }
+
+  // ✅ register new user
+  users[email] = {
+    username: name,
+    password: password
+  };
+
+  localStorage.setItem("users", JSON.stringify(users));
+  currentUser = name;
+}
+
+// ---------- AUTH LOGIC END ----------
+
+
+  
   currency.value = localStorage.getItem(`currency_${currentUser}`) || "₹";
   const saved = localStorage.getItem(`expenses_${currentUser}`);
   expenses = saved ? JSON.parse(saved) : [];
@@ -678,11 +785,15 @@ function initApp(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("mainApp").classList.remove("hidden");
 
-  username.value = currentUser;   // ✅ AUTO-FILL USER NAME
+  // ✅ SHOW NAV BAR AFTER LOGIN
+  document.querySelector(".bottom-nav").classList.remove("hidden");
+
+  username.value = currentUser;
 
   renderHome();
   applyFilters();
 }
+
 
 
 if(sessionStorage.getItem("loggedIn")==="yes" && sessionStorage.getItem("currentUser")){
@@ -874,7 +985,7 @@ function renderHome(){
       ${recentHTML}
       <div class="total-caption">Recent Total</div>
       <div class="total-box">${currency.value}${totalRecent}</div>
-      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.2 Dt:03/01/2026</div>
+      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.3 Dt:05/01/2026</div>
     </div>`;
 }
 
@@ -958,8 +1069,34 @@ function moveFloatingPill(el) {
   pill.style.left = `${spacing * index + (spacing - pill.offsetWidth)/2}px`;
 }
 
+// ================= FORGOT PASSWORD =================
+function forgotPasswordUI() {
+    const emailInput = document.getElementById("forgotEmail");
+    const msg = document.getElementById("forgotMessage");
+    const email = emailInput.value.trim();
+    msg.style.color = "#d9534f"; // default red for error
+    msg.innerText = "";
+
+    if (!email) {
+        msg.innerText = "Please enter your registered email.";
+        return;
+    }
+
+    if (!users[email]) {
+        msg.innerText = "❌ No account found with this email.";
+        return;
+    }
+
+    const username = users[email].username;
+    const password = users[email].password;
+
+    msg.style.color = "#28a745"; // green for success
+    msg.innerText = `✅ Your credentials:\nUsername: ${username}\nPassword: ${password}`;
+
+    emailInput.value = "";
+}
+
 
 </script>
 </body>
 </html>
-
