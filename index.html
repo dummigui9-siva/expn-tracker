@@ -415,6 +415,32 @@ button:hover{transform:translateY(-2px)}
   100% { transform: rotate(360deg); }
 }
 
+/* ===== PASSWORD TOGGLE ===== */
+.password-box{
+  position: relative;
+  margin-top: 12px;
+}
+
+.password-box input{
+  width: 100%;
+  padding-right: 46px;
+}
+
+.toggle-eye{
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%) scale(1);
+  cursor: pointer;
+  font-size: 18px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  opacity: 0.7;
+}
+
+.toggle-eye:active{
+  transform: translateY(-50%) scale(1.2);
+  opacity: 1;
+}
 
 
 </style>
@@ -426,12 +452,16 @@ button:hover{transform:translateY(-2px)}
   <div class="screen active">
     <div class="card" style="margin-top:40%; text-align:center">
       <h2>Expense Tracker</h2>
-      <p style="opacity:.7">Enter your credentials to continue</p>
+      <p style="opacity:.7">Enter your name to continue</p>
 
       <!-- LOGIN INPUTS -->
       <input id="loginName" placeholder="Your name" style="margin-top:12px;">
       <input id="loginEmail" type="email" placeholder="Email address" style="margin-top:12px;">
-      <input id="loginPassword" type="password" placeholder="Password" style="margin-top:12px;">
+      <div class="password-box">
+  <input id="loginPassword" type="password" placeholder="Password">
+  <span class="toggle-eye" onclick="togglePassword()">👁️</span>
+</div>
+
       <p id="loginError" style="color:red; opacity:0.8; margin-top:10px;"></p>
       <button onclick="login()" style="margin-top:12px;">Proceed</button>
 
@@ -451,7 +481,7 @@ button:hover{transform:translateY(-2px)}
       ">Recover Password</button>
 
       <div class="home-disclaimer" style="margin-top:20px;">
-        © 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.3 Dt:06/01/2026
+        © 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.2 Dt:03/01/2026
       </div>
     </div>
   </div>
@@ -555,70 +585,44 @@ button:hover{transform:translateY(-2px)}
     </div>
   </div>
 
-  
   <!-- INSTRUCTIONS TAB -->
-<div id="instructions" class="screen">
-  <div class="card">
-    <h3>Expense Tracker - User Guide</h3>
-    <p>This simple application helps you monitor your daily expenses. Follow the tabs below to understand its features:</p>
-    
-    <div style="margin-top:16px;">
-      <strong>1. Login / Registration:</strong>
-      <p>
-        - Enter your <b>Name</b>, <b>Email</b>, and <b>Password</b> to login.<br>
-        - If you are a new user (email not registered), the app will automatically create an account for you.<br>
-        - Username must be unique. If the username exists with another email, registration will be blocked.<br>
-        - Successful login will take you to the Home screen where you can view and manage expenses.
-      </p>
-    </div>
+  <div id="instructions" class="screen">
+    <div class="card">
+      <h3>Expense Tracker - User Guide</h3>
+      <p>This simple application helps you monitor your daily expenses. Follow the tabs below to understand its features:</p>
+      
+      <div style="margin-top:16px;">
+        <strong>1. Home Tab:</strong>
+        <p>Welcome screen displaying your name and a summary of all expenses. The recent expenses table shows the latest entries and total spent.</p>
+      </div>
 
-    <div style="margin-top:16px;">
-      <strong>2. Reset Password: <p style="color:red;">"Reset Password, function yet to be implemented"</p></strong>
-      <p>
-        - If you forget your password, enter your <b>registered email</b> and your <b>new password</b> in the Reset Password section.<br>
-        - Click <b>Reset Password</b>. If the email exists, your password will be updated and you can login with the new password.<br>
-        - Make sure to enter both the registered email and a new password to successfully reset.
-      </p>
-    </div>
+      <div style="margin-top:16px;">
+        <strong>2. Add Tab:</strong>
+        <p>Use this tab to add new expenses. Fill your name, amount, category, description, and date. Click <b>Add Expense</b> to save.</p>
+        <p>Updating an expense is done via the <b>Expense tab</b> (3rd tab) using the Edit button.</p>
+      </div>
 
-    <div style="margin-top:16px;">
-      <strong>3. Home Tab:</strong>
-      <p>
-        Welcome screen displaying your name and a summary of all expenses. The recent expenses table shows the latest entries and total spent.
-      </p>
-    </div>
+      <div style="margin-top:16px;">
+        <strong>3. Expense Tab:</strong>
+        <p>Displays all expenses in a table. You can <b>Edit</b> or <b>Delete</b> entries. Editing redirects you to the Add tab.</p>
+      </div>
 
-    <div style="margin-top:16px;">
-      <strong>4. Add Tab:</strong>
-      <p>
-        Use this tab to add new expenses. Fill your name, amount, category, description, and date. Click <b>Add Expense</b> to save.<br>
-        Updating an expense is done via the <b>Expense tab</b> using the Edit button.
-      </p>
-    </div>
+      <div style="margin-top:16px;">
+        <strong>4. User Tab:</strong>
+        <p>This tab contains:</p>
+        <ul>
+          <li><b>Insights:</b> Overview of total spending.</li>
+          <li><b>Budget:</b> Average spending per entry.</li>
+          <li><b>Categories:</b> Spending grouped by category.</li>
+          <li><b>Preferences:</b> Most preferred category based on total spending and frequency.</li>
+          <li>Options to <b>Export CSV</b>, <b>Toggle Dark Mode</b>, and <b>Logout</b>.</li>
+        </ul>
+      </div>
 
-    <div style="margin-top:16px;">
-      <strong>5. Expense Tab:</strong>
-      <p>
-        Displays all expenses in a table. You can <b>Edit</b> or <b>Delete</b> entries. Editing redirects you to the Add tab.
-      </p>
+      <p style="margin-top:16px;">💡 Tip: Start by entering your name in the Home tab, then add expenses, view summaries, and explore statistics in the User tab.<br><br>© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved
+RC V1.2 Dt:03/01/2026</p>
     </div>
-
-    <div style="margin-top:16px;">
-      <strong>6. User Tab:</strong>
-      <p>This tab contains:</p>
-      <ul>
-        <li><b>Insights:</b> Overview of total spending.</li>
-        <li><b>Budget:</b> Average spending per entry.</li>
-        <li><b>Categories:</b> Spending grouped by category.</li>
-        <li><b>Preferences:</b> Most preferred category based on total spending and frequency.</li>
-        <li>Options to <b>Export CSV</b>, <b>Toggle Dark Mode</b>, and <b>Logout</b>.</li>
-      </ul>
-    </div>
-
-    <p style="margin-top:16px;">💡 Tip: Start by entering your name in the Home tab, then add expenses, view summaries, explore statistics, or reset your password if needed.<br><br>© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br>RC V1.3 Dt:05/01/2026</p>
   </div>
-</div>
-
 
 </div>
 
@@ -703,6 +707,13 @@ let editId = null;
 currency.value = currentUser ? (localStorage.getItem(`currency_${currentUser}`) || "₹") : "₹";
 username.value = "";
 profileName.innerText = "User";
+
+function togglePassword(){
+  const pwd = document.getElementById("loginPassword");
+  pwd.type = pwd.type === "password" ? "text" : "password";
+}
+
+
 
 /* ================= LOGIN ================= */
 function login(){
@@ -985,7 +996,7 @@ function renderHome(){
       ${recentHTML}
       <div class="total-caption">Recent Total</div>
       <div class="total-box">${currency.value}${totalRecent}</div>
-      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.3 Dt:05/01/2026</div>
+      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.2 Dt:03/01/2026</div>
     </div>`;
 }
 
@@ -1095,6 +1106,8 @@ function forgotPasswordUI() {
 
     emailInput.value = "";
 }
+
+
 
 
 </script>
