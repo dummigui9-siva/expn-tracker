@@ -767,8 +767,10 @@ function login(){
 
 function logout(){
   sessionStorage.removeItem("loggedIn");
+  sessionStorage.removeItem("currentUser");
   location.reload();
 }
+
 
 function initApp(){
   document.getElementById("loginScreen").style.display="none";
@@ -777,11 +779,19 @@ function initApp(){
   // ✅ SHOW NAV BAR AFTER LOGIN
   document.querySelector(".bottom-nav").classList.remove("hidden");
 
+  // ✅ LOAD USER DATA PROPERLY
+  const savedExpenses = localStorage.getItem(`expenses_${currentUser}`);
+  expenses = savedExpenses ? JSON.parse(savedExpenses) : [];
+
+  currency.value = localStorage.getItem(`currency_${currentUser}`) || "₹";
+
   username.value = currentUser;
+  profileName.innerText = currentUser;
 
   renderHome();
   applyFilters();
 }
+
 
 
 
