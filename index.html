@@ -233,7 +233,8 @@ button:hover{transform:translateY(-2px)}
   width: 90%;
   max-width: 420px;
   height: 56px;
-  background: #001f3f; /* navy blue background */
+  background: #0b2545; /* navy blue background */
+
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -266,7 +267,8 @@ button:hover{transform:translateY(-2px)}
   width: 90%;
   max-width: 420px;
   height: 56px;
-  background: #001f3f; /* navy blue background */
+  background: #0b2545; /* navy blue background */
+
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -285,7 +287,8 @@ button:hover{transform:translateY(-2px)}
   width: 90%;
   max-width: 420px;
   height: 56px;
-  background: #001f3f; /* navy blue background */
+  background: #0b2545; /* navy blue background */
+
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -304,7 +307,8 @@ button:hover{transform:translateY(-2px)}
   width: 90%;
   max-width: 420px;
   height: 56px;
-  background: #001f3f; /* navy blue background */
+  background: #0b2545; /* navy blue background */
+
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -323,7 +327,8 @@ button:hover{transform:translateY(-2px)}
   width: 90%;
   max-width: 420px;
   height: 56px;
-  background: #001f3f; /* solid navy */
+  background: #2f7f7a; /* dark mint background */
+
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -342,7 +347,8 @@ button:hover{transform:translateY(-2px)}
   width: 90%;
   max-width: 420px;
   height: 56px;
-  background: #001f3f; /* solid navy */
+  background: #0b2545; /* navy blue background */
+
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -452,40 +458,63 @@ button:hover{transform:translateY(-2px)}
   <div class="screen active">
     <div class="card" style="margin-top:40%; text-align:center">
       <h2>Expense Tracker</h2>
-      <p style="opacity:.7">Enter your name to continue</p>
+      <p style="opacity:.7">Login to continue</p>
 
-      <!-- LOGIN INPUTS -->
-      <input id="loginName" placeholder="Your name" style="margin-top:12px;">
-      <input id="loginEmail" type="email" placeholder="Email address" style="margin-top:12px;">
+      <input id="loginName" placeholder="Username" style="margin-top:12px;">
+
       <div class="password-box">
-  <input id="loginPassword" type="password" placeholder="Password">
-  <span class="toggle-eye" onclick="togglePassword()">👁️</span>
-</div>
+        <input id="loginPassword" type="password" placeholder="Password">
+        <span class="toggle-eye" onclick="togglePassword()">👁️</span>
+      </div>
 
       <p id="loginError" style="color:red; opacity:0.8; margin-top:10px;"></p>
-      <button onclick="login()" style="margin-top:12px;">Proceed</button>
 
-      <!-- FORGOT PASSWORD SECTION -->
-      <hr style="margin:20px 0; opacity:0.3;">
-      <h3 style="margin-bottom:8px; opacity:0.7;">Forgot Password?</h3>
-      <input id="forgotEmail" type="email" placeholder="Enter your registered email" style="margin-top:12px;">
-      <p id="forgotMessage" style="margin-top:8px; opacity:0.8; white-space: pre-line;"></p>
-      <button onclick="forgotPasswordUI()" style="
-        margin-top:10px;
-        background:#ffcc00;
-        color:#000;
-        font-weight:600;
-        border:none;
-        border-radius:999px;
-        padding:12px;
-      ">Recover Password</button>
+      <button onclick="login()">Login</button>
 
-      <div class="home-disclaimer" style="margin-top:20px;">
-        © 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.3 Dt:06/01/2026
-      </div>
+      <p style="margin-top:16px;">
+        <a href="#" onclick="showRegister()">New User? Register</a><br>
+        <a href="#" onclick="showForgot()">Forgot Password?</a><br>
+        <p style="margin-top:16px;">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved
+RC V1.5 Dt:10/01/2026</p>
+      </p>
     </div>
   </div>
 </div>
+
+
+<!-- REGISTER SCREEN -->
+<div id="registerScreen" class="app hidden">
+  <div class="screen active">
+    <div class="card" style="margin-top:35%; text-align:center">
+      <h2>Register</h2>
+
+      <input id="regName" placeholder="Username">
+      <input id="regEmail" type="email" placeholder="Email">
+      <input id="regPassword" type="password" placeholder="Password">
+
+      <p id="regError" style="color:red;margin-top:8px;"></p>
+
+      <button onclick="registerUser()">Register</button>
+      <button onclick="backToLogin()" style="margin-top:10px;">Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD SCREEN -->
+<div id="forgotScreen" class="app hidden">
+  <div class="screen active">
+    <div class="card" style="margin-top:35%; text-align:center">
+      <h2>Recover Password</h2>
+
+      <input id="forgotEmail" type="email" placeholder="Registered Email">
+      <p id="forgotMessage" style="margin-top:8px;"></p>
+
+      <button onclick="forgotPasswordUI()">Recover</button>
+      <button onclick="backToLogin()" style="margin-top:10px;">Back</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- MAIN APP -->
 <div id="mainApp" class="app hidden">
@@ -507,15 +536,18 @@ button:hover{transform:translateY(-2px)}
       <label>Amount</label>
       <input type="number" id="amount">
       <label>Category</label>    
-      <select id="category" onchange="showCategoryDescription()">
-        <option value="">Select</option>
-        <option>Food</option>
-        <option>Travel</option>
-        <option>Shopping</option>
-        <option>Fuel</option>
-        <option>FASTag</option>
-        <option>Miscellaneous</option>
-      </select>
+<select id="category" onchange="showCategoryDescription()">
+  <option value="">Select</option>
+  <option>Food</option>
+  <option>Travel</option>
+  <option>Shopping</option>
+  <option>Fuel</option>
+  <option>FASTag</option>
+  <option>Miscellaneous</option>
+</select>
+
+<!-- NEW: Free text category -->
+<input id="customCategory" placeholder="Enter custom category (optional)">
 
       <div id="categoryDescription" style="
         margin-top:8px;
@@ -523,11 +555,14 @@ button:hover{transform:translateY(-2px)}
         opacity:0.8;
         padding-left:6px;
       "></div>
+<label>Description Type</label>
+<select id="descriptionType">
+  <option value="">Select description</option>
+</select>
 
-      <label>Description Type</label>
-      <select id="descriptionType">
-        <option value="">Select description</option>
-      </select>
+<!-- NEW: Free text description -->
+<input id="customDescription" placeholder="Enter custom description (optional)">
+
 
       <label>Date</label>
       <input type="date" id="date">
@@ -591,24 +626,42 @@ button:hover{transform:translateY(-2px)}
       <h3>Expense Tracker - User Guide</h3>
       <p>This simple application helps you monitor your daily expenses. Follow the tabs below to understand its features:</p>
       
+      <!-- AUTHENTICATION INSTRUCTIONS -->
+<div style="margin-top:16px;">
+  <h4>🔐 Part 1: Login & Access</h4>
+
+  <p>👤 <strong>Existing User – Login</strong></p>
+  <p>Enter your registered <b>Username</b> and <b>Password</b> on the Login screen, then click <b>Login</b> to access the application.</p>
+
+  <p>🆕 <strong>New User – Registration</strong></p>
+  <p>Click <b>New User? Register</b> on the Login screen. Enter a unique <b>Username</b>, a valid <b>Email ID</b>, and a <b>Password</b>. After successful registration, return to the Login screen and log in.</p>
+
+  <p>🔑 <strong>Forgot Username / Password</strong></p>
+  <p>Click <b>Forgot Password?</b> on the Login screen. Enter your registered <b>Email ID</b> to retrieve your Username and Password.</p>
+
+  <hr style="margin:18px 0; opacity:0.4;">
+</div>
+
+
+      
       <div style="margin-top:16px;">
-        <strong>1. Home Tab:</strong>
+        <strong>1. 🏠 Home Tab:</strong>
         <p>Welcome screen displaying your name and a summary of all expenses. The recent expenses table shows the latest entries and total spent.</p>
       </div>
 
       <div style="margin-top:16px;">
-        <strong>2. Add Tab:</strong>
+        <strong>2. ➕ Add Tab:</strong>
         <p>Use this tab to add new expenses. Fill your name, amount, category, description, and date. Click <b>Add Expense</b> to save.</p>
         <p>Updating an expense is done via the <b>Expense tab</b> (3rd tab) using the Edit button.</p>
       </div>
 
       <div style="margin-top:16px;">
-        <strong>3. Expense Tab:</strong>
+        <strong>3. 💸 Expense Tab:</strong>
         <p>Displays all expenses in a table. You can <b>Edit</b> or <b>Delete</b> entries. Editing redirects you to the Add tab.</p>
       </div>
 
       <div style="margin-top:16px;">
-        <strong>4. User Tab:</strong>
+        <strong>4. 👤 User Tab:</strong>
         <p>This tab contains:</p>
         <ul>
           <li><b>Insights:</b> Overview of total spending.</li>
@@ -620,7 +673,7 @@ button:hover{transform:translateY(-2px)}
       </div>
 
       <p style="margin-top:16px;">💡 Tip: Start by entering your name in the Home tab, then add expenses, view summaries, and explore statistics in the User tab.<br><br>© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved
-RC V1.3 Dt:06/01/2026</p>
+RC V1.5 Dt:10/01/2026</p>
     </div>
   </div>
 
@@ -677,7 +730,7 @@ const categoryFilter = document.getElementById("categoryFilter");
 const navItems = document.querySelectorAll(".nav-item");
 const loginName = document.getElementById("loginName");
 
-const loginEmail = document.getElementById("loginEmail");
+
 const loginPassword = document.getElementById("loginPassword");
 
 
@@ -714,78 +767,68 @@ function togglePassword(){
 }
 
 
+function showRegister(){
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("registerScreen").classList.remove("hidden");
+}
+
+
+function showForgot(){
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("forgotScreen").classList.remove("hidden");
+}
+
+function backToLogin(){
+  document.getElementById("registerScreen").classList.add("hidden");
+  document.getElementById("forgotScreen").classList.add("hidden");
+  document.getElementById("loginScreen").classList.remove("hidden");
+}
+
 
 /* ================= LOGIN ================= */
 function login(){
   const name = loginName.value.trim();
-const email = loginEmail.value.trim();
-const password = loginPassword.value;
-
+  const password = loginPassword.value;
   const loginError = document.getElementById("loginError");
-  if(!name){ loginError.innerText="Please enter your name to continue"; return; }
+
   loginError.innerText = "";
-  console.log("LOGIN INPUTS:", name, email, password);
-  // ---------- AUTH LOGIC START ----------
 
-// basic validation
-if (!email || !password) {
-  loginError.innerText = "Email and password are required";
-  return;
-}
-
-// CASE 1: Email already exists → LOGIN
-if (users[email]) {
-
-  // username mismatch
-  if (users[email].username !== name) {
-    loginError.innerText = "Email is already linked to another username";
+  if(!name || !password){
+    loginError.innerText = "Please enter username and password";
     return;
   }
 
-  // password mismatch
-  if (users[email].password !== password) {
+  // find user by username
+  let foundUser = null;
+
+  for (let email in users) {
+    if (users[email].username === name) {
+      foundUser = users[email];
+      break;
+    }
+  }
+
+  if (!foundUser) {
+    loginError.innerText = "User not found. Please register.";
+    return;
+  }
+
+  if (foundUser.password !== password) {
     loginError.innerText = "Incorrect password";
     return;
   }
 
-  // ✅ successful login
+  // ✅ SUCCESS
   currentUser = name;
+  sessionStorage.setItem("loggedIn","yes");
+  sessionStorage.setItem("currentUser",currentUser);
+
+  initApp();
 }
 
-// CASE 2: New email → REGISTER
-else {
-
-  // check if username already used with a different email
-  for (let e in users) {
-    if (users[e].username === name) {
-      loginError.innerText = "Username already exists. Please login.";
-      return;
-    }
-  }
-
-  // ✅ register new user
-  users[email] = {
-    username: name,
-    password: password
-  };
-
-  localStorage.setItem("users", JSON.stringify(users));
-  currentUser = name;
-}
 
 // ---------- AUTH LOGIC END ----------
 
-
-  
-  currency.value = localStorage.getItem(`currency_${currentUser}`) || "₹";
-  const saved = localStorage.getItem(`expenses_${currentUser}`);
-  expenses = saved ? JSON.parse(saved) : [];
-  username.value = currentUser;
-  profileName.innerText = currentUser;
-  sessionStorage.setItem("loggedIn","yes");
-  sessionStorage.setItem("currentUser",currentUser);
-  initApp();
-}
 
 function logout(){
   sessionStorage.removeItem("loggedIn");
@@ -818,18 +861,27 @@ if(sessionStorage.getItem("loggedIn")==="yes" && sessionStorage.getItem("current
 
 /* ================= EXPENSE FUNCTIONS ================= */
 function addExpense(){
-  if(!amount.value || !category.value || !date.value) return;
-  const descValue = document.getElementById("descriptionType").value;
+  if(!amount.value || !(category.value || customCat) || !date.value) return;
+
+  const customDesc = document.getElementById("customDescription").value.trim();
+const descValue = customDesc || document.getElementById("descriptionType").value;
+
+const customCat = document.getElementById("customCategory").value.trim();
+const finalCategory = customCat || category.value;
+
   if(editId){
-    expenses = expenses.map(e => e.id===editId ? {...e, amount: amount.value, category: category.value, date: date.value, descriptionType: descValue} : e);
+    expenses = expenses.map(e => e.id===editId ? {...e, amount: amount.value, category: finalCategory, date: date.value, descriptionType: descValue} : e);
     editId = null;
     addBtn.innerText = "Add Expense";
   } else {
-    expenses.push({id: Date.now(), amount: amount.value, category: category.value, descriptionType: descValue, date: date.value});
+    expenses.push({id: Date.now(), amount: amount.value, category: finalCategory, descriptionType: descValue, date: date.value});
   }
   localStorage.setItem(`expenses_${currentUser}`, JSON.stringify(expenses));
   amount.value = date.value = "";
   category.selectedIndex = 0;
+  document.getElementById("customCategory").value = "";
+  document.getElementById("customDescription").value = "";
+
   document.getElementById("categoryDescription").innerText = "";
   document.getElementById("descriptionType").innerHTML = '<option value="">Select description</option>';
   applyFilters();
@@ -996,7 +1048,7 @@ function renderHome(){
       ${recentHTML}
       <div class="total-caption">Recent Total</div>
       <div class="total-box">${currency.value}${totalRecent}</div>
-      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.3 Dt:06/01/2026</div>
+      <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.5 Dt:10/01/2026</div>
     </div>`;
 }
 
@@ -1079,6 +1131,39 @@ function moveFloatingPill(el) {
   // center pill under icon
   pill.style.left = `${spacing * index + (spacing - pill.offsetWidth)/2}px`;
 }
+
+function registerUser(){
+  const name = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const password = document.getElementById("regPassword").value;
+
+  const err = document.getElementById("regError");
+  err.innerText = "";
+
+  if(!name || !email || !password){
+    err.innerText = "All fields required";
+    return;
+  }
+
+  if(users[email]){
+    err.innerText = "Email already registered";
+    return;
+  }
+
+  for(let e in users){
+    if(users[e].username === name){
+      err.innerText = "Username already exists";
+      return;
+    }
+  }
+
+  users[email] = { username:name, password:password };
+  localStorage.setItem("users", JSON.stringify(users));
+
+  alert("Registration successful. Please login.");
+  backToLogin();
+}
+
 
 // ================= FORGOT PASSWORD =================
 function forgotPasswordUI() {
