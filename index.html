@@ -832,50 +832,46 @@ if(sessionStorage.getItem("loggedIn")==="yes" && sessionStorage.getItem("current
 
 /* ================= EXPENSE FUNCTIONS ================= */
 function addExpense(){
+  const wasEditing = !!editId;
 
-  const customCat = document.getElementById("customCategory").value.trim();
-  const finalCategory = customCat || category.value;
+  const selectedCategory = category.value;
+  const categoryNote = document.getElementById("customCategory").value.trim();
 
-  const customDesc = document.getElementById("customDescription").value.trim();
-  const descValue = customDesc || document.getElementById("descriptionType").value;
+  const selectedDescription = document.getElementById("descriptionType").value;
+  const descriptionNote = document.getElementById("customDescription").value.trim();
 
-  if(!amount.value || !finalCategory || !date.value) return;
+  if(!amount.value || !selectedCategory || !date.value) return;
+
+  const expenseObj = {
+    id: editId || Date.now(),
+    amount: amount.value,
+    category: selectedCategory,
+    categoryNote: categoryNote,
+    descriptionType: selectedDescription,
+    descriptionNote: descriptionNote,
+    date: date.value
+  };
 
   if(editId){
-    expenses = expenses.map(e =>
-      e.id === editId
-        ? {
-            ...e,
-            amount: amount.value,
-            category: finalCategory,
-            descriptionType: descValue,
-            date: date.value
-          }
-        : e
-    );
+    expenses = expenses.map(e => e.id === editId ? expenseObj : e);
     editId = null;
     addBtn.innerText = "Add Expense";
   } else {
-    expenses.push({
-      id: Date.now(),
-      amount: amount.value,
-      category: finalCategory,
-      descriptionType: descValue,
-      date: date.value
-    });
+    expenses.push(expenseObj);
   }
 
   localStorage.setItem(`expenses_${currentUser}`, JSON.stringify(expenses));
 
-  // reset form
-  amount.value = "";
-  date.value = "";
-  category.selectedIndex = 0;
-  document.getElementById("customCategory").value = "";
-  document.getElementById("customDescription").value = "";
-  document.getElementById("categoryDescription").innerText = "";
-  document.getElementById("descriptionType").innerHTML =
-    '<option value="">Select description</option>';
+  if (!wasEditing) {
+    amount.value = "";
+    date.value = "";
+    category.selectedIndex = 0;
+    document.getElementById("customCategory").value = "";
+    document.getElementById("descriptionType").innerHTML =
+      '<option value="">Select description</option>';
+    document.getElementById("customDescription").value = "";
+    document.getElementById("categoryDescription").innerText = "";
+  }
 
   applyFilters();
   renderHome();
@@ -892,9 +888,25 @@ function exportCSV(){
   rows.push(["User Name", currentUser]);
   rows.push(["Total Amount", totalAmount]);
   rows.push([]);
-  rows.push(["Date","Category","Description","Amount"]);
+  rows.push([
+  "Date",
+  "Category",
+  "Category Description",
+  "Description",
+  "Description Description",
+  "Amount"
+]);
+
   expenses.forEach(e=>{
-    rows.push([e.date,e.category,e.descriptionType || "",e.amount]);
+    rows.push([
+  e.date,
+  e.category,
+  e.categoryNote || "",
+  e.descriptionType || "",
+  e.descriptionNote || "",
+  e.amount
+]);
+
   });
   rows.push([]);
   rows.push(["Total","", "", totalAmount]);
@@ -920,8 +932,16 @@ function applyFilters(){
     summaryBody.innerHTML+=`
       <tr>
         <td>${e.date}</td>
-        <td>${e.category}</td>
-        <td>${e.descriptionType || "-"}</td>
+        <td>
+  ${e.category}
+  ${e.categoryNote ? `<div style="font-size:11px;opacity:.7">(${e.categoryNote})</div>` : ""}
+</td>
+
+<td>
+  ${e.descriptionType || "-"}
+  ${e.descriptionNote ? `<div style="font-size:11px;opacity:.7">(${e.descriptionNote})</div>` : ""}
+</td>
+
         <td>${currency.value}${e.amount}</td>
         <td>
           <button class="action-btn edit-btn" onclick="editExpense(${e.id})">Edit</button>
@@ -929,7 +949,7 @@ function applyFilters(){
         </td>
       </tr>`; 
   });
-  renderHome();
+
 }
 
 /* ===== AUTO-SCROLL TO LATEST ENTRY ===== */
@@ -940,52 +960,37 @@ if(wrapper){
 
 /* ================= EDIT & DELETE ================= */
 function editExpense(id){
-  const e = expenses.find(x => x.id === id);
+  const e = expenses.find(exp => exp.id === id);
   if(!e) return;
 
-  editId = id;
+  editId = e.id;
 
-  // Amount & Date
+  // Fill amount and date
   amount.value = e.amount;
   date.value = e.date;
 
-  // ----- CATEGORY HANDLING -----
-  const predefinedCategories = [...category.options].map(o => o.value);
-  if(predefinedCategories.includes(e.category)){
-    // predefined category
-    category.value = e.category;
-    document.getElementById("customCategory").value = "";
-    editCategoryIsCustom = false;
+  // CATEGORY (dropdown + free text)
+category.value = e.category;
+document.getElementById("customCategory").value = e.categoryNote || "";
 
-    showCategoryDescription(); // rebuild dropdown
+// Rebuild description dropdown based on category
+showCategoryDescription();
 
-  } else {
-    // custom category
-    category.value = "";
-    document.getElementById("customCategory").value = e.category;
-    document.getElementById("categoryDescription").innerText = "";
-    document.getElementById("descriptionType").innerHTML =
-      '<option value="">Select description</option>';
-    editCategoryIsCustom = true;
-  }
+// DESCRIPTION (dropdown + free text)
+setTimeout(() => {
+  document.getElementById("descriptionType").value = e.descriptionType || "";
+  document.getElementById("customDescription").value = e.descriptionNote || "";
+}, 0);
 
-  // ----- DESCRIPTION HANDLING -----
-  const descSelect = document.getElementById("descriptionType");
-  const predefinedDescs = [...descSelect.options].map(o => o.value);
 
-  if(predefinedDescs.includes(e.descriptionType)){
-    descSelect.value = e.descriptionType;
-    document.getElementById("customDescription").value = "";
-    editDescriptionIsCustom = false;
-  } else {
-    descSelect.value = "";
-    document.getElementById("customDescription").value = e.descriptionType || "";
-    editDescriptionIsCustom = true;
-  }
 
   addBtn.innerText = "Update Expense";
+
+  // Switch to Add tab
   switchScreen('add', navItems[1]);
 }
+
+
 
 
 
@@ -1041,11 +1046,16 @@ void el.offsetWidth;                       // force reflow
 el.style.animation = "popBounce 0.35s ease-out forwards"; // pop + bounce
 
 // ⚡ Change icon color smoothly
-svgIcon.style.stroke = "#ffcc00";         // active gold color
-
 
   
-  if(id==="home") renderHome();
+  if (id === "home") {
+  renderHome();
+}
+
+if (id === "list") {
+  applyFilters(); // 🔑 ensures Expense tab always reflects latest data
+}
+
   
 }
 
@@ -1080,7 +1090,7 @@ function renderHome(){
       <div class="home-title">Expense Tracker</div>
       <div class="home-quote">Hello, ${displayName}! 😊💰 Track expenses • Control spending • Live happily</div>
       ${recentHTML}
-      <div class="total-caption">Recent Total</div>
+      <div class="total-caption">Summary-Gist of Recent Total</div>
       <div class="total-box">${currency.value}${totalRecent}</div>
       <div class="home-disclaimer">© 2025–2026 Sivakumar | siva80mail@gmail.com | All rights reserved <br> RC V1.5 Dt:10/01/2026</div>
     </div>`;
@@ -1094,9 +1104,13 @@ function showCategoryDescription(){
   if(!categorySelect || !descBox || !descSelect) return;
   const selected=categorySelect.value;
   descBox.innerText="";
-  if(!editId){
-  descSelect.innerHTML='<option value="">Select description</option>';
+  // Clear description dropdown ONLY when not editing
+if(!editId){
+  descSelect.innerHTML = '<option value="">Select description</option>';
+} else {
+  descSelect.innerHTML = '<option value="">Select description</option>';
 }
+
 
   if(!selected) return;
   descBox.innerText=categoryDescriptions[selected] || "";
