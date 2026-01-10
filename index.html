@@ -259,84 +259,16 @@ button:hover{transform:translateY(-2px)}
 }
 
 /* ================= NAV BAR (NAVY + WHITE ICONS, NO HALO) ================= */
-.bottom-nav{
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 420px;
-  height: 56px;
-  background: #0b2545; /* navy blue background */
 
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  border-radius: 999px;
-  box-shadow: 0 20px 50px rgba(0,0,0,.4);
-  z-index: 999;
-  overflow: hidden;
-}
 
 /* ================= NAV BAR (NAVY + WHITE ICONS, ACTIVE POP-UP) ================= */
-.bottom-nav{
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 420px;
-  height: 56px;
-  background: #0b2545; /* navy blue background */
 
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  border-radius: 999px;
-  box-shadow: 0 20px 50px rgba(0,0,0,.4);
-  z-index: 999;
-  overflow: hidden;
-}
 
 /* ================= NAV BAR (NAVY + WHITE ICONS, ACTIVE NAV POP-UP) ================= */
-.bottom-nav{
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 420px;
-  height: 56px;
-  background: #0b2545; /* navy blue background */
 
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  border-radius: 999px;
-  box-shadow: 0 20px 50px rgba(0,0,0,.4);
-  z-index: 999;
-  overflow: hidden;
-}
 
 /* ================= NAV BAR (NAVY + WHITE ICONS, ACTIVE POP-UP) ================= */
-.bottom-nav{
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 420px;
-  height: 56px;
-  background: #2f7f7a; /* dark mint background */
 
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  border-radius: 999px;
-  box-shadow: 0 20px 50px rgba(0,0,0,.4);
-  z-index: 999;
-  overflow: hidden;
-}
 
 /* ================= NAV BAR (NAVY + INTERACTIVE ICONS) ================= */
 .bottom-nav{
@@ -756,6 +688,9 @@ let expenses = [];
 let currentUser = sessionStorage.getItem("currentUser") || null;
 let users = JSON.parse(localStorage.getItem("users")) || {};
 let editId = null;
+let editCategoryIsCustom = false;
+let editDescriptionIsCustom = false;
+
 
 currency.value = currentUser ? (localStorage.getItem(`currency_${currentUser}`) || "₹") : "₹";
 username.value = "";
@@ -861,32 +796,57 @@ if(sessionStorage.getItem("loggedIn")==="yes" && sessionStorage.getItem("current
 
 /* ================= EXPENSE FUNCTIONS ================= */
 function addExpense(){
-  if(!amount.value || !(category.value || customCat) || !date.value) return;
+
+  const customCat = document.getElementById("customCategory").value.trim();
+  const finalCategory = customCat || category.value;
 
   const customDesc = document.getElementById("customDescription").value.trim();
-const descValue = customDesc || document.getElementById("descriptionType").value;
+  const descValue = customDesc || document.getElementById("descriptionType").value;
 
-const customCat = document.getElementById("customCategory").value.trim();
-const finalCategory = customCat || category.value;
+  if(!amount.value || !finalCategory || !date.value) return;
 
   if(editId){
-    expenses = expenses.map(e => e.id===editId ? {...e, amount: amount.value, category: finalCategory, date: date.value, descriptionType: descValue} : e);
+    expenses = expenses.map(e =>
+      e.id === editId
+        ? {
+            ...e,
+            amount: amount.value,
+            category: finalCategory,
+            descriptionType: descValue,
+            date: date.value
+          }
+        : e
+    );
     editId = null;
     addBtn.innerText = "Add Expense";
   } else {
-    expenses.push({id: Date.now(), amount: amount.value, category: finalCategory, descriptionType: descValue, date: date.value});
+    expenses.push({
+      id: Date.now(),
+      amount: amount.value,
+      category: finalCategory,
+      descriptionType: descValue,
+      date: date.value
+    });
   }
+
   localStorage.setItem(`expenses_${currentUser}`, JSON.stringify(expenses));
-  amount.value = date.value = "";
+
+  // reset form
+  amount.value = "";
+  date.value = "";
   category.selectedIndex = 0;
   document.getElementById("customCategory").value = "";
   document.getElementById("customDescription").value = "";
-
   document.getElementById("categoryDescription").innerText = "";
-  document.getElementById("descriptionType").innerHTML = '<option value="">Select description</option>';
+  document.getElementById("descriptionType").innerHTML =
+    '<option value="">Select description</option>';
+
   applyFilters();
-  renderHome(); // reflect changes on home
+  renderHome();
 }
+
+
+
 
 /* ================= EXPORT CSV (Professional) ================= */
 function exportCSV(){
@@ -944,16 +904,54 @@ if(wrapper){
 
 /* ================= EDIT & DELETE ================= */
 function editExpense(id){
-  let e = expenses.find(x=>x.id===id);
-  amount.value = e.amount;
-  category.value = e.category;
-  date.value = e.date;
-  document.getElementById("descriptionType").value = e.descriptionType || "";
+  const e = expenses.find(x => x.id === id);
+  if(!e) return;
+
   editId = id;
+
+  // Amount & Date
+  amount.value = e.amount;
+  date.value = e.date;
+
+  // ----- CATEGORY HANDLING -----
+  const predefinedCategories = [...category.options].map(o => o.value);
+  if(predefinedCategories.includes(e.category)){
+    // predefined category
+    category.value = e.category;
+    document.getElementById("customCategory").value = "";
+    editCategoryIsCustom = false;
+
+    showCategoryDescription(); // rebuild dropdown
+
+  } else {
+    // custom category
+    category.value = "";
+    document.getElementById("customCategory").value = e.category;
+    document.getElementById("categoryDescription").innerText = "";
+    document.getElementById("descriptionType").innerHTML =
+      '<option value="">Select description</option>';
+    editCategoryIsCustom = true;
+  }
+
+  // ----- DESCRIPTION HANDLING -----
+  const descSelect = document.getElementById("descriptionType");
+  const predefinedDescs = [...descSelect.options].map(o => o.value);
+
+  if(predefinedDescs.includes(e.descriptionType)){
+    descSelect.value = e.descriptionType;
+    document.getElementById("customDescription").value = "";
+    editDescriptionIsCustom = false;
+  } else {
+    descSelect.value = "";
+    document.getElementById("customDescription").value = e.descriptionType || "";
+    editDescriptionIsCustom = true;
+  }
+
   addBtn.innerText = "Update Expense";
   switchScreen('add', navItems[1]);
-  showCategoryDescription();
 }
+
+
 
 function deleteExpense(id){
   expenses = expenses.filter(e=>e.id!==id);
@@ -1060,7 +1058,10 @@ function showCategoryDescription(){
   if(!categorySelect || !descBox || !descSelect) return;
   const selected=categorySelect.value;
   descBox.innerText="";
+  if(!editId){
   descSelect.innerHTML='<option value="">Select description</option>';
+}
+
   if(!selected) return;
   descBox.innerText=categoryDescriptions[selected] || "";
   (categoryDescriptionOptions[selected] || []).forEach(item=>{
